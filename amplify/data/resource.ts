@@ -13,6 +13,8 @@ const schema = a.schema({
     }),
   Questions: a
     .model({
+      question_id: a.id().required(),
+      quiz_id: a.string(),
       name: a.string(),
       description: a.string(),
       image: a.string(),
@@ -20,6 +22,29 @@ const schema = a.schema({
       location: a.string(),
       category: a.string(),
       answer: a.string()
+    }),
+  Quiz: a
+    .model({
+      quiz_id: a.id().required(),
+      name: a.string(),
+      start_time: a.string()
+    }),
+  Teams: a
+    .model({
+      team_id: a.id().required(),
+      quiz_id: a.string(),
+      name: a.string(),
+      members: a.string()
+    }),
+  Answers: a
+    .model({
+      team_id: a.id().required(),
+      quiz_id: a.string(),
+      question_id: a.string(),
+      question_category: a.string(),
+      team_captain: a.string(),
+      team_name: a.string(),
+      members: a.string()
     })
     
 }).authorization((allow) => [allow.publicApiKey()]);
