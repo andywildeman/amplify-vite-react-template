@@ -15,8 +15,7 @@ const schema = a.schema({
     .model({
       question_id: a.id(),
       quiz_id: a.string(),
-      name: a.string(),
-      description: a.string(),
+      number: a.string(),
       image: a.string(),
       question: a.string(),
       location: a.string(),
