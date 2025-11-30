@@ -10,9 +10,19 @@ const schema = a.schema({
   Todo: a
     .model({
       content: a.string(),
+    }),
+  Questions: a
+    .model({
+      name: a.string(),
+      description: a.string(),
+      image: a.string(),
+      question: a.string(),
+      location: a.string(),
+      category: a.string(),
+      answer: a.string()
     })
-    .authorization((allow) => [allow.publicApiKey()]),
-});
+    
+}).authorization((allow) => [allow.publicApiKey()]);
 
 export type Schema = ClientSchema<typeof schema>;
 
