@@ -13,7 +13,7 @@ const schema = a.schema({
     }),
   Questions: a
     .model({
-      question_id: a.id().required(),
+      question_id: a.id(),
       quiz_id: a.string(),
       name: a.string(),
       description: a.string(),
@@ -25,20 +25,20 @@ const schema = a.schema({
     }),
   Quiz: a
     .model({
-      quiz_id: a.id().required(),
+      quiz_id: a.id(),
       name: a.string(),
       start_time: a.string()
     }),
   Teams: a
     .model({
-      team_id: a.id().required(),
+      team_id: a.id(),
       quiz_id: a.string(),
       name: a.string(),
       members: a.string()
     }),
   Answers: a
     .model({
-      team_id: a.id().required(),
+      team_id: a.id(),
       quiz_id: a.string(),
       question_id: a.string(),
       question_category: a.string(),
