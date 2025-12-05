@@ -1,16 +1,13 @@
  import { useEffect} from "react"
  import { useState } from "react"
-import {
-   Label,
-   Input,
-   Button,
-   Flex,
-Accordion,
- } from "@aws-amplify/ui-react";
-   
+ import Accordion from 'react-bootstrap/Accordion';  
 
  import type { Schema } from "../amplify/data/resource";
  import { generateClient } from "aws-amplify/data";
+
+ import { Amplify } from "aws-amplify";
+ import outputs from "../amplify_outputs.json";
+ Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
  
@@ -22,36 +19,22 @@ Accordion,
        next: (data) => setQuestions([...data.items]),
      });
    }, []);
- 
-    return (
-      <div>
-        <Accordion.Container>
-        {questions.map(question => 
-          <Accordion.Item key={"item-" + question.id} value={"item-" + question.id}>
-            <Accordion.Trigger>
-              <p>Question Number {question.number}</p>
-              <Accordion.Icon />
-            </Accordion.Trigger>
-            <Accordion.Content>  
-              <Flex direction="column" gap="small">
-                <Label htmlFor="first_name">{question.question}</Label>
-                <Input id="first_name" name="first_name" />
-                <Button onClick={() => alert('Answer Submitted')}>Submit Answer</Button>
-              </Flex>
-            </Accordion.Content>
-          </Accordion.Item>
-        )}
-        </Accordion.Container>
-      </div>
-   ); 
 
-   /*return(
-      <ul>
-        {questions.map((question) => (
-          <li key={question.id}>{question.question}</li>
-        ))}
-      </ul>
-   );*/
+
+  return (
+    <div>
+      <Accordion>
+      {questions.map(question => 
+        <Accordion.Item eventKey={"item-" + question.id} key={"item-" + question.id} >
+          <Accordion.Header>Question Number {question.number}</Accordion.Header>
+          <Accordion.Body>
+            {question.question}
+          </Accordion.Body>
+        </Accordion.Item>
+      )}
+    </Accordion>
+    </div>
+  );
 
  }
  
