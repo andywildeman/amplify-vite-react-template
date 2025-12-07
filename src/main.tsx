@@ -11,6 +11,10 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+//import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+//import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+//const s3 = new S3Client({ region: "eu-west-2" });
+
 
 Amplify.configure(outputs);
 
@@ -30,14 +34,13 @@ if(quizId != null){
     }
   } catch (err) {
     console.error("Error:", err);
-  }
-  
+  }  
 }
 console.log(window.sessionStorage.getItem('quizId'));
 //console.log(getQuiz('c7534ee4-6115-48ac-a929-2e3f9ff9c770'))
 
 const root = createRoot(document.getElementById("root")!)
-if(quizId == "123"){
+if(quizId != "123"){
   root.render(
     <React.StrictMode>
       <App />
