@@ -5,7 +5,7 @@ import App from "./App.tsx";
 import '@aws-amplify/ui-react/styles.css'
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
-import Example from "./Team.tsx";
+import Team from "./Team.tsx";
 import Quiz from "./Quiz.tsx";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
@@ -53,7 +53,7 @@ function renderControls(){
     root.render(
       <React.StrictMode>
         <App />
-        <Example />
+        <Team />
       </React.StrictMode>
     )
   }else{

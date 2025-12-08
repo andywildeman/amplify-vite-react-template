@@ -1,15 +1,40 @@
-
 import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 //import InputGroup from 'react-bootstrap/InputGroup';
+import { generateClient } from "aws-amplify/api";
+ import { Amplify } from "aws-amplify";
+ import outputs from "../amplify_outputs.json";
+ import type { Schema } from "../amplify/data/resource";
+  
+ Amplify.configure(outputs);
 
-function Example() {
+ const client = generateClient<Schema>();
+
+ async function createTeam(quizId: string, name: string, members: string) {
+  try {
+    const newTeam = await client.models.Teams.create({
+      quiz_id: quizId,
+      name: name,
+      members: members
+    });
+
+    console.log("Team created:", newTeam);
+    return newTeam;
+  } catch (error) {
+    console.error("Error creating team:", error);
+  }
+}
+
+
+function Team() {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  
 
   return (
     <>
@@ -53,8 +78,11 @@ function Example() {
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleClose}>
-            Save Changes
+          <Button variant="primary" onClick={async (e) => {
+                e.preventDefault(); 
+                await createTeam("c7534ee4-6115-48ac-a929-2e3f9ff9c770", "Dream Team", "Alice, Bob, Charlie");
+              }}>
+            Create Team
           </Button>
         </Modal.Footer>
       </Modal>
@@ -62,4 +90,4 @@ function Example() {
   );
 }
 
-export default Example;
+export default Team;
