@@ -20,16 +20,14 @@
   if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
   if(theAnswer.startsWith("(AND)|")){
     isCorrect = true;
-    const subStrings = theAnswer.split("|");
-    for(let x=1; x<subStrings.length, x++;){
-      if(!submittedAnswer.includes(subStrings[x])){isCorrect = false;}
-    }
+    theAnswer.split("|").forEach(function (value) {
+       if(!submittedAnswer.includes(value.toLowerCase())){isCorrect = false;}
+    });
   }
   if(theAnswer.startsWith("(OR)|")){
-    const subStrings = theAnswer.split("|");
-    for(let x=1; x<subStrings.length, x++;){
-      if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
-     }
+    theAnswer.split("|").forEach(function (value) {
+      if(submittedAnswer.toLowerCase() == value.toLowerCase()){isCorrect = true;}
+    }); 
   }
   return isCorrect;
  }
