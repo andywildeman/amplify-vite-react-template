@@ -15,7 +15,7 @@ const schema = a.schema({
       question: a.string(),
       location: a.string(),
       category: a.string(),
-      answer: a.string(),
+      answer: a.string()
     }),
   Quiz: a
     .model({

@@ -62,8 +62,7 @@
      });
    }, []);
 
-   //question.category.toString().includes(":")?<S3ObjectHtml filePath={question.quiz_id + "/" + question.id + question.category?.toString().split(":")[1]} fileType={category} />: <div></div> 
-           
+            
   return (
     <div>
       <Accordion>

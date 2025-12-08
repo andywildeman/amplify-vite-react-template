@@ -20,43 +20,52 @@ Amplify.configure(outputs);
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
+console.log(urlParams);
 const quizId = urlParams.get('quizId')
 console.log(quizId);
 
 const client = generateClient<Schema>();
 
-if(quizId != null){
-  try {
-    const quiz = await getQuiz({ id: quizId });
-    console.log(quiz);
-    if(quiz != null){
-      window.sessionStorage.setItem('quizId', JSON.stringify(quizId));
+async function init() {
+  if (quizId != null) {
+    try {
+      const quiz = await client.models.Quiz.get({ id: quizId });
+      console.log(quiz);
+
+      if (quiz != null) {
+        window.sessionStorage.setItem("quizId", JSON.stringify(quizId));
+        renderControls();
+      }
+    } catch (err) {
+      console.error("Error:", err);
     }
-  } catch (err) {
-    console.error("Error:", err);
-  }  
+  }
 }
-console.log(window.sessionStorage.getItem('quizId'));
-//console.log(getQuiz('c7534ee4-6115-48ac-a929-2e3f9ff9c770'))
 
-const root = createRoot(document.getElementById("root")!)
-if(quizId != "123"){
-  root.render(
-    <React.StrictMode>
-      <App />
-      <Example />
-    </React.StrictMode>
-  )
-}else{
-  root.render(
+init();
+
+function renderControls(){
+  console.log(window.sessionStorage.getItem('quizId'));
+  //console.log(getQuiz('c7534ee4-6115-48ac-a929-2e3f9ff9c770'))
+
+  const root = createRoot(document.getElementById("root")!)
+  if(quizId != "123"){
+    root.render(
       <React.StrictMode>
-      <Quiz id='c7534ee4-6115-48ac-a929-2e3f9ff9c770' />
-    </React.StrictMode>
+        <App />
+        <Example />
+      </React.StrictMode>
     )
+  }else{
+    root.render(
+        <React.StrictMode>
+        <Quiz id='c7534ee4-6115-48ac-a929-2e3f9ff9c770' />
+      </React.StrictMode>
+      )
+  }
 }
 
-
-export async function getQuiz({ id }: { id: string }) {
+/* export async function getQuiz({ id }: { id: string }) {
   const { data: quiz, errors } = await client.models.Quiz.get({ id });
 
   if (errors) {
@@ -65,5 +74,5 @@ export async function getQuiz({ id }: { id: string }) {
   }
 
   return quiz;
-}
+} */
 
