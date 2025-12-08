@@ -33,7 +33,7 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
         return(
           <div>
           <audio controls>
-            <source src={fileUrl} type="audio/wav" />
+            <source src={String(fileUrl)} type="audio/wav" />
           Your browser does not support the audio element.
           </audio>  
           </div>
@@ -42,7 +42,7 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
       case "URL:png": { 
         return(
           <div>
-            <img src={fileUrl} />
+            <img src={String(fileUrl)} />
           </div>
         ) 
     

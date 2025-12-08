@@ -8,14 +8,14 @@
  import S3ObjectHtml from "./S3File.tsx";
  import Button from 'react-bootstrap/Button';
  import Form from 'react-bootstrap/Form';
- import { generateClient } from "aws-amplify/data";
- import { update } from "@aws-amplify/data";
+ import { generateClient } from "aws-amplify/api";
+ //import { update } from "@aws-amplify/data";
 
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
 
- function isAnswerCorrect(submittedAnswer: string, theAnswer){
+ function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
   let isCorrect = false;
   if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
   if(theAnswer.startsWith("(contains)|")){
@@ -41,7 +41,7 @@
         console.log(question.data?.answer);
         if(question != null){
           const submittedAnswer = document.getElementById("txb-"+ questionId) as HTMLInputElement;
-          if(isAnswerCorrect(submittedAnswer.value, question.data?.answer?.toString())){
+          if(isAnswerCorrect(submittedAnswer.value, String(question.data?.answer))){
             console.log("correct");
           }else {
             console.log("wrong");
