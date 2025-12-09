@@ -15,6 +15,7 @@
 
  const client = generateClient<Schema>();
 
+
  function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
   let isCorrect = false;
   if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
@@ -61,16 +62,50 @@
       }  
     }
   }
+const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
 
  function QuizAccordion() {
+    
    const [questions, setQuestions] = useState<Array<Schema["Questions"]["type"]>>([]);
  
    useEffect(() => {
      client.models.Questions.observeQuery().subscribe({
-       next: (data) => setQuestions([...data.items]),
-     });
+       next: (data) => {
+
+      const filtered = data.items.filter(q => q.quiz_id === quizId);
+
+      // 2. SORT
+      const sorted = filtered.sort(
+        (a, b) => String(a.number).localeCompare(String(b.number))
+      );
+
+      // 3. UPDATE STATE
+      setQuestions(sorted);
+      //setQuestions([...data.items]),
+         },
+    });
+
+    //return () => sub.unsubscribe();
    }, []);
 
+//   const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
+//   const [questions, setQuestions] = useState([]);
+
+// useEffect(() => {
+//   const load = async () => {
+//     const result = await client.models.Questions.list({
+//       filter: { quiz_id: { eq: quizId } }
+//     });
+
+//     const sorted = result.data.sort(
+//       (a, b) => Number(a.number) - Number(b.number)
+//     );
+
+//     setQuestions(result.data);
+//   };
+
+//   load();
+// }, [quizId]);
             
   return (
     <div>

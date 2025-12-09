@@ -21,6 +21,52 @@ import { generateClient } from "aws-amplify/api";
     });
 
     console.log("Team created:", newTeam);
+    const teamQuestions = await getAllQuestions(String(newTeam.data!.id))
+    console.log(teamQuestions);
+
+    return newTeam;
+  } catch (error) {
+    console.error("Error creating team:", error);
+  }
+}
+
+async function getAllQuestions(teamId: string){
+  try {
+    const questions = await client.models.TeamQuestions.list({    });
+
+    for (const question of questions.data) {
+      const newTeamQuestion = await createTeamQuestion(
+        teamId,
+        String(question.quiz_id),
+        question.id,
+        String(question!.question_type),
+        String(question.question),
+        String(question.location),
+        String(question.category)
+    );
+    console.log(newTeamQuestion);
+  }
+    
+
+  } catch (error) {
+    console.error("Error listing questions:", error);
+  }
+}
+
+ async function createTeamQuestion(teamId: string, quizId: string, questionId: string,  questionType: string, question: string, location: string, category: string) {
+  try {
+    const newTeam = await client.models.TeamQuestions.create({
+      team_id: teamId,
+      quiz_id: quizId,
+      question_id: questionId,
+      question_type: questionType,
+      question: question,
+      location: location,
+      category: category,
+      team_answer: "",
+    });
+
+    console.log("Team created:", newTeam);
     return newTeam;
   } catch (error) {
     console.error("Error creating team:", error);
@@ -33,8 +79,6 @@ function Team() {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
-  
 
   return (
     <>
@@ -80,7 +124,7 @@ function Team() {
           </Button>
           <Button variant="primary" onClick={async (e) => {
                 e.preventDefault(); 
-                await createTeam("c7534ee4-6115-48ac-a929-2e3f9ff9c770", "Dream Team", "Alice, Bob, Charlie");
+                await createTeam("c7534ee4-6115-48ac-a929-2e3f9ff9c770", "Dream Team2", "Alice, Bob, Charlie");
               }}>
             Create Team
           </Button>
