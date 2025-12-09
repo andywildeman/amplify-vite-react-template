@@ -9,6 +9,7 @@
  import Button from 'react-bootstrap/Button';
  import Form from 'react-bootstrap/Form';
  import { generateClient } from "aws-amplify/api";
+ import { useAuthenticator } from '@aws-amplify/ui-react';
  //import { update } from "@aws-amplify/data";
 
  Amplify.configure(outputs);
@@ -65,7 +66,8 @@
 const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
 
  function QuizAccordion() {
-    
+     const { signOut } = useAuthenticator();
+  
    const [questions, setQuestions] = useState<Array<Schema["Questions"]["type"]>>([]);
  
    useEffect(() => {
@@ -140,6 +142,7 @@ const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
         </Accordion.Item>
       )}
     </Accordion>
+    <button onClick={signOut}>Sign out</button>
     </div>
   );
 

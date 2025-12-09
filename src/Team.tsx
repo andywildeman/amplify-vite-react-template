@@ -32,9 +32,10 @@ import { generateClient } from "aws-amplify/api";
 
 async function getAllQuestions(teamId: string){
   try {
-    const questions = await client.models.TeamQuestions.list({    });
-
+    const questions = await client.models.Questions.list({    });
+    console.log(questions);
     for (const question of questions.data) {
+      console.log(question);
       const newTeamQuestion = await createTeamQuestion(
         teamId,
         String(question.quiz_id),
@@ -46,7 +47,7 @@ async function getAllQuestions(teamId: string){
     );
     console.log(newTeamQuestion);
   }
-    
+ return (questions);   
 
   } catch (error) {
     console.error("Error listing questions:", error);
@@ -124,7 +125,7 @@ function Team() {
           </Button>
           <Button variant="primary" onClick={async (e) => {
                 e.preventDefault(); 
-                await createTeam("c7534ee4-6115-48ac-a929-2e3f9ff9c770", "Dream Team2", "Alice, Bob, Charlie");
+                await createTeam("c7534ee4-6115-48ac-a929-2e3f9ff9c770", "Dream Team3", "Alice, Bob, Charlie");
               }}>
             Create Team
           </Button>
