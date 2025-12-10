@@ -19,7 +19,7 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
     useEffect(() => {
       async function load() {
         const {url} = await getUrl({
-          path: filePath,
+          path: filePath
         });
         console.log(url.toString());
         setFileUrl(url.toString());
