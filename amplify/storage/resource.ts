@@ -3,14 +3,11 @@ import { defineStorage } from '@aws-amplify/backend';
 export const storage = defineStorage({
   name: "thDrive",
   access: (allow) => ({
-    // Public assets
-    "public/*": [
-      allow.guest.to(["read"]),                 // guests can read public/*
-      allow.authenticated.to(["read", "write"]) // authed users can read/write
+    "*": [
+      allow.authenticated.to(["read", "write"])  // allow ALL authenticated access
     ],
-
-    // Protected assets (only for authenticated users)
-    "protected/*": [
+    "public/*": [
+      allow.guest.to(["read"]),
       allow.authenticated.to(["read", "write"])
     ]
   })
