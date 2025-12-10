@@ -11,7 +11,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { Authenticator } from '@aws-amplify/ui-react';
+//import { Authenticator } from '@aws-amplify/ui-react';
 //import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 //import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 //const s3 = new S3Client({ region: "eu-west-2" });
@@ -52,11 +52,10 @@ function renderControls(){
   if(quizId != "123"){
     root.render(
       <React.StrictMode>
-        <Authenticator>
+        
           <QuizAccordion />
           <Team />
           
-        </Authenticator>
       </React.StrictMode>
     )
   }else{

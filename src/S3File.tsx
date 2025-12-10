@@ -12,7 +12,7 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
   
   if(fileType!=null && fileType.toString().includes(":")){
 
-    const filePath = "protected/" + quizId + "/" + questionId + "." + fileType.split(':')[1];
+    const filePath = quizId + "/" + questionId + "." + fileType.split(':')[1];
     
     const [fileUrl, setFileUrl] = useState<string | null>(null);
 
