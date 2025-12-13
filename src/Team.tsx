@@ -80,7 +80,7 @@ async function getAllQuestions(teamId: string){
   }
 }
 
- async function createTeamQuestion(teamId: string, quizId: string, questionId: string, question: string, category: string) {
+async function createTeamQuestion(teamId: string, quizId: string, questionId: string, question: string, category: string) {
   try {
     const newTeam = await client.models.TeamAnswers.create({
       team_id: teamId,

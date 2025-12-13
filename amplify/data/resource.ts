@@ -37,6 +37,7 @@ const schema = a.schema({
       quiz_id: a.string(),
       team_id: a.id(),
       question_id: a.string(),
+      question_number: a.string(),
       question: a.string(),
       category: a.string(),
       team_answer: a.string(),
@@ -46,7 +47,7 @@ const schema = a.schema({
   Answers: a
     .model({
       quiz_id: a.string(),
-      team_id: a.id(),
+      question_number: a.string(),
       question_id: a.string(),
       answer: a.string()
     })

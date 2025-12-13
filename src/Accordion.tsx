@@ -75,7 +75,11 @@ const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
      client.models.Questions.observeQuery().subscribe({
        next: (data) => {
 
-      const filtered = data.items.filter(q => q.quiz_id === quizId);
+      const filtered = data.items.filter(
+        q => 
+        q.quiz_id === quizId &&
+        q.show === 'Y'
+      );
 
       // 2. SORT
       const sorted = filtered.sort(

@@ -16,7 +16,8 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 //import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 //import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-//const s3 = new S3Client({ region: "eu-west-2" });
+//const s3 = new S3Client({ region: "eu-west-2" });.
+import Utilities from "./Utilities.tsx"
 
 Amplify.configure(outputs);
 const client = generateClient<Schema>();
@@ -96,7 +97,8 @@ function renderControls(teamId: string){
       <React.StrictMode>
         <Authenticator>
           <AppNavbar />
-          <QuizAccordion />        
+          <QuizAccordion />   
+          <Utilities />     
         </Authenticator>  
       </React.StrictMode>
     )
