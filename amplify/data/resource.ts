@@ -10,13 +10,14 @@ const schema = a.schema({
   Questions: a
     .model({
       quiz_id: a.string(),
-      number: a.string(),
+      question_number: a.string(),
       image: a.string(),
       question: a.string(),
       question_type: a.string(),
       location: a.string(),
       category: a.string(),
-      answer: a.string()
+      answer: a.string(),
+      show: a.string()
     }),
   Quiz: a
     .model({
@@ -31,27 +32,23 @@ const schema = a.schema({
       team_leader_email: a.string(),
       members: a.string()
     }),
-  TeamQuestions: a
+  TeamAnswers: a
     .model({
-      team_id: a.id(),
       quiz_id: a.string(),
+      team_id: a.id(),
       question_id: a.string(),
-      question_type: a.string(),
       question: a.string(),
-      location: a.string(),
       category: a.string(),
-      team_answer: a.string()
+      team_answer: a.string(),
+      is_correct: a.string(),
+      pass_played: a.string()
     }),
   Answers: a
     .model({
-      team_id: a.id(),
       quiz_id: a.string(),
+      team_id: a.id(),
       question_id: a.string(),
-      question_type: a.string(),
-      question: a.string(),
-      location: a.string(),
-      category: a.string(),
-      team_answer: a.string()
+      answer: a.string()
     })
     
 }).authorization((allow) => [allow.publicApiKey()]);

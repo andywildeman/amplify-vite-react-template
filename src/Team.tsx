@@ -1,23 +1,51 @@
-import { useState } from 'react';
+//import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
+//import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 //import InputGroup from 'react-bootstrap/InputGroup';
 import { generateClient } from "aws-amplify/api";
  import { Amplify } from "aws-amplify";
  import outputs from "../amplify_outputs.json";
  import type { Schema } from "../amplify/data/resource";
+//import { Color } from 'aws-cdk-lib/aws-cloudwatch';
+//import { Container } from 'react-bootstrap';
   
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
 
- async function createTeam(quizId: string, name: string, members: string) {
+ async function createTeam() {
+    const quizId = String(window.sessionStorage.getItem('quizId'));
+    const teamName = (document.getElementById("txb-team-name") as HTMLInputElement).value;
+    const teamLeader = (document.getElementById("txb-team-leader") as HTMLInputElement).value;
+    const teamLeaderEmail = window.sessionStorage.getItem('userEmail');
+    let teamMembers = "";
+    if((document.getElementById("txb-team-member1") as HTMLInputElement).value != ""){
+      teamMembers += (document.getElementById("txb-team-member1") as HTMLInputElement).value + "|";
+    }
+    if((document.getElementById("txb-team-member2") as HTMLInputElement).value != ""){
+      teamMembers += (document.getElementById("txb-team-member2") as HTMLInputElement).value + "|" ;
+    }
+    if((document.getElementById("txb-team-member3") as HTMLInputElement).value != ""){
+      teamMembers += (document.getElementById("txb-team-member3") as HTMLInputElement).value + "|";
+    }
+    if((document.getElementById("txb-team-member4") as HTMLInputElement).value != ""){
+      teamMembers += (document.getElementById("txb-team-member4") as HTMLInputElement).value  + "|";
+    }
+    if((document.getElementById("txb-team-member5") as HTMLInputElement).value != ""){
+      teamMembers += (document.getElementById("txb-team-member5") as HTMLInputElement).value  + "|";
+    }
+    if((document.getElementById("txb-team-member6") as HTMLInputElement).value != ""){
+      teamMembers += (document.getElementById("txb-team-member6") as HTMLInputElement).value  + "|";
+    }
+
   try {
     const newTeam = await client.models.Teams.create({
       quiz_id: quizId,
-      name: name,
-      members: members
+      name: teamName,
+      team_leader: teamLeader,
+      team_leader_email: teamLeaderEmail,
+      members: teamMembers
     });
 
     console.log("Team created:", newTeam);
@@ -41,9 +69,7 @@ async function getAllQuestions(teamId: string){
         String(question.quiz_id),
         question.id,
         String(question!.question_type),
-        String(question.question),
-        String(question.location),
-        String(question.category)
+        String(question.question)
     );
     console.log(newTeamQuestion);
   }
@@ -54,15 +80,13 @@ async function getAllQuestions(teamId: string){
   }
 }
 
- async function createTeamQuestion(teamId: string, quizId: string, questionId: string,  questionType: string, question: string, location: string, category: string) {
+ async function createTeamQuestion(teamId: string, quizId: string, questionId: string, question: string, category: string) {
   try {
-    const newTeam = await client.models.TeamQuestions.create({
+    const newTeam = await client.models.TeamAnswers.create({
       team_id: teamId,
       quiz_id: quizId,
       question_id: questionId,
-      question_type: questionType,
       question: question,
-      location: location,
       category: category,
       team_answer: "",
     });
@@ -76,30 +100,24 @@ async function getAllQuestions(teamId: string){
 
 
 function Team() {
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
+  const styleObj = {
+    padding: "10px",
+    border: "solid"
+  }
+  const btnStyle = {
+    padding: "10px"
+  }
   return (
-    <>
-      <Button variant="primary" onClick={handleShow}>
-        Launch demo modal
-      </Button>
-
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Register Team</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+    <div className="container" style={styleObj}>
+      <h1>Enter Your team details</h1>
             <Form>
                 <Form.Group className="mb-3" controlId="txb-team-name">
-                    <Form.Control type="text" placeholder="team name" />
+                  <Form.Control type="text" placeholder="team name" />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="txb-team-leader">
                     <Form.Control type="text" placeholder="team leader" />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="txb-team-member">
+                <Form.Group className="mb-3" controlId="txb-team-member1">
                     <Form.Control type="text" placeholder="team member 1" />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="txb-team-member2">
@@ -118,20 +136,15 @@ function Team() {
                     <Form.Control type="text" placeholder="team member 6" />
                 </Form.Group>
             </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={async (e) => {
+
+          <Button variant="primary" style={btnStyle} onClick={async (e) => {
                 e.preventDefault(); 
-                await createTeam("c7534ee4-6115-48ac-a929-2e3f9ff9c770", "Dream Team3", "Alice, Bob, Charlie");
+                await createTeam();
               }}>
             Create Team
           </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+
+    </div>
   );
 }
 

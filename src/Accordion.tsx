@@ -63,6 +63,8 @@
       }  
     }
   }
+
+
 const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
 
  function QuizAccordion() {
@@ -77,7 +79,7 @@ const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
 
       // 2. SORT
       const sorted = filtered.sort(
-        (a, b) => String(a.number).localeCompare(String(b.number))
+        (a, b) => String(a.question_number).localeCompare(String(b.question_number))
       );
 
       // 3. UPDATE STATE
@@ -113,7 +115,7 @@ const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
       <Accordion>
       {questions.map(question => 
         <Accordion.Item eventKey={"item-" + question.id} key={"item-" + question.id} >
-          <Accordion.Header>Question Number {question.number}</Accordion.Header>
+          <Accordion.Header>Question Number {question.question_number}</Accordion.Header>
           <Accordion.Body>
             {question.question}
             <br /><br />
