@@ -17,7 +17,7 @@ import { fetchUserAttributes } from 'aws-amplify/auth';
 //import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 //import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 //const s3 = new S3Client({ region: "eu-west-2" });.
-//import Utilities from "./Utilities.tsx"
+import Utilities from "./Utilities.tsx"
 
 Amplify.configure(outputs);
 const client = generateClient<Schema>();
@@ -87,12 +87,28 @@ if(urlParams.get('quizId') != null){
   getQuiz(String(urlParams.get('quizId')));
 }
 
+if(urlParams.get('admin') != null){
+  console.log(urlParams.get('admin'));
+  window.sessionStorage.setItem("admin", String(urlParams.get('admin')));
+}
+else{
+  window.sessionStorage.setItem("admin", "false");
+}
+
 function renderControls(teamId: string){
   console.log(teamId);
   //console.log(getQuiz('c7534ee4-6115-48ac-a929-2e3f9ff9c770'))
 
   const root = createRoot(document.getElementById("root")!)
-  if(teamId != ""){
+  if(String(window.sessionStorage.getItem('admin')) == "true"){
+    root.render(
+      <React.StrictMode>
+        <Authenticator>
+          <Utilities />
+        </Authenticator>
+      </React.StrictMode>
+    )
+  }else if(teamId != ""){
     root.render(
       <React.StrictMode>
         <Authenticator>

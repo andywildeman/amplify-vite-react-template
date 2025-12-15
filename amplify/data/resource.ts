@@ -46,6 +46,21 @@ const schema = a.schema({
       pass_played: a.string(),
       show: a.string()
     }),
+    TeamQuestions: a
+    .model({
+      quiz_id: a.string(),
+      team_id: a.id(),
+      question_id: a.string(),
+      question_number: a.string(),
+      question: a.string(),
+      question_type: a.string(),
+      category: a.string(),
+      location: a.string(),
+      team_answer: a.string(),
+      is_correct: a.string(),
+      pass_played: a.string(),
+      show: a.string()
+    }),
   Answers: a
     .model({
       quiz_id: a.string(),

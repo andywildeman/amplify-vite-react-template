@@ -33,7 +33,7 @@
   return isCorrect;
  }
 
- async function updateAnswer(questionId: string, questionNumber: string, passPlayed: string){
+ async function updateAnswer(teamQuestionId: string, questionId: string, questionNumber: string, passPlayed: string){
      if(questionId != null){
       if(passPlayed == "passTrue"){
         if(confirm("Are you sure you want to play a pass? You cannot play this question once you have played your pass")){
@@ -62,8 +62,9 @@
               submittedAnswer.value,
               "Y"
             );
-            setAssociatedQuestionVisible(
+            setAssociatedTeamAnswerVisible(
               quizId,
+              teamQuestionId,
               questionNumber
             )
           }else {
@@ -97,11 +98,12 @@
     console.log(updatedAnswer);
   }
 
-  async function setAssociatedQuestionVisible(quizId: string, linkedQuestionNumber: string){
+  async function setAssociatedTeamAnswerVisible(quizId: string, teamQuestionId: string, linkedQuestionNumber: string){
     const questionNumberToUpdate = linkedQuestionNumber.substring(0, linkedQuestionNumber.length - 1) + "B";
     console.log(linkedQuestionNumber);
     console.log(questionNumberToUpdate);
-    const result = await client.models.Questions.list({
+    console.log(teamQuestionId);
+    const result = await client.models.TeamAnswers.list({
         filter: {
           and: [
             { quiz_id: { eq: quizId }},
@@ -114,7 +116,7 @@
 
     if (!answer) return;
 
-    await client.models.Questions.update({
+    await client.models.TeamAnswers.update({
       id: answer.id,
       show: "Y"   
     });
@@ -132,10 +134,10 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
 
  function QuizAccordion() {
   
-   const [questions, setQuestions] = useState<Array<Schema["Questions"]["type"]>>([]);
+   const [questions, setQuestions] = useState<Array<Schema["TeamAnswers"]["type"]>>([]);
  
    useEffect(() => {
-     client.models.Questions.observeQuery().subscribe({
+     client.models.TeamAnswers.observeQuery().subscribe({
        next: (data) => {
 
       const filtered = data.items.filter(
@@ -181,30 +183,30 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
     <div>
       <Accordion>
       {questions.map(question => 
-        <Accordion.Item eventKey={"item-" + question.id} key={"item-" + question.id} >
+        <Accordion.Item eventKey={"item-" + question.question_id} key={"item-" + question.question_id} >
           <Accordion.Header>{headerText(String(question.question_number), String(question.location))}</Accordion.Header>
           <Accordion.Body>
             {question.question}
             <br /><br />
-             <S3ObjectHtml quizId={question.quiz_id} questionId={question.id} fileType={question.category} />
+             <S3ObjectHtml quizId={question.quiz_id} questionId={question.question_id} fileType={question.category} />
                 <br />
                 <Form>
-                  <Form.Group className="mb-3" controlId={"txb-" + question.id}>
+                  <Form.Group className="mb-3" controlId={"txb-" + question.question_id}>
                       <Form.Control type="text" placeholder="your answer" />
                   </Form.Group>
                   <Button variant="primary" type="button" onClick={async () => {
-                    await updateAnswer(question.id, String(question.question_number), "passFalse")
+                    await updateAnswer(question.id, String(question.question_id), String(question.question_number), "passFalse")
                     }}>
                     Submit
                   </Button>
                   &nbsp;&nbsp;&nbsp;
                   <Button variant="primary" type="button" onClick={async () => {
-                    await updateAnswer(question.id, String(question.question_number), "passTrue")
+                    await updateAnswer(question.id, String(question.question_id), String(question.question_number), "passTrue")
                     }}>
                     Play a pass
                   </Button>
                   &nbsp;&nbsp;&nbsp;
-                  <span id={"ans-" + question.id}></span>
+                  <span id={"ans-" + question.question_id}></span>
                 </Form>
            </Accordion.Body>
         </Accordion.Item>

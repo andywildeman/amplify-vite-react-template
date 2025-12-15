@@ -73,8 +73,11 @@ async function getAllQuestions(teamId: string){
         String(question.quiz_id),
         question.id,
         String(question.question_number),
+        String(question.question),
         String(question!.question_type),
-        String(question.question)
+        String(question.category),
+        String(question.location),
+        String(question.show)
     );
     console.log(newTeamQuestion);
   }
@@ -85,17 +88,30 @@ async function getAllQuestions(teamId: string){
   }
 }
 
-async function createTeamQuestion(teamId: string, quizId: string, questionId: string, questionNumber: string,  question: string, category: string) {
+async function createTeamQuestion(teamId: string,
+  quizId: string,
+  questionId: string,
+  questionNumber: string, 
+  question: string,
+  questionType: string,
+  category: string,
+  location: string,
+  show: string
+) {
   try {
-    const newTeam = await client.models.TeamAnswers.create({
+    const newTeam = await client.models.TeamQuestions.create({
       team_id: teamId,
       quiz_id: quizId,
       question_id: questionId,
       question_number: questionNumber,
       question: question,
+      question_type: questionType,
       category: category,
-      team_answer: "",
+      location: location,
+      show: show,
+      team_answer: ""
     });
+
 
     console.log("Team created:", newTeam);
     return newTeam;
