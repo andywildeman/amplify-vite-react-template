@@ -22,8 +22,7 @@ export default function Utilities(){
       const newAnswer = await createAnswers(
         String(question.quiz_id),
         question.id,
-        String(question.question_number),
-        String(question!.answer),
+        String(question.question_number)
     );
     console.log(newAnswer);
   }
@@ -34,13 +33,12 @@ export default function Utilities(){
   }
 } 
 
-  async function createAnswers(quizId: string, questionId: string, questionNumber: string, answer: string) {
+  async function createAnswers(quizId: string, questionId: string, questionNumber: string) {
   try {
-    const newTeam = await client.models.Answers.create({
+    const newTeam = await client.models.TeamQuestions.create({
       quiz_id: quizId,
       question_id: questionId,
-      question_number: questionNumber,
-      answer: answer  
+      question_number: questionNumber
     });
 
     console.log("Answer created:", newTeam);

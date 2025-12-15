@@ -162,8 +162,9 @@ function Team() {
                 </Form.Group>
             </Form>
 
-          <Button variant="primary" style={btnStyle} onClick={async (e) => {
-                e.preventDefault(); 
+          <Button variant="primary" style={btnStyle} onClick={async () => {
+                //e.preventDefault(); 
+                
                 await createTeam();
               }}>
             Create Team

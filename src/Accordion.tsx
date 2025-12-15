@@ -1,8 +1,6 @@
  import { useEffect, useState} from "react"
  import Accordion from 'react-bootstrap/Accordion';  
-
  import type { Schema } from "../amplify/data/resource";
- 
  import { Amplify } from "aws-amplify";
  import outputs from "../amplify_outputs.json";
  import S3ObjectHtml from "./S3File.tsx";
@@ -16,60 +14,80 @@
 
  const client = generateClient<Schema>();
 
+function QuizAccordion() {
+
  function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
   let isCorrect = false;
   if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
-  if(theAnswer.startsWith("(AND)|")){
+  if(theAnswer.startsWith("(AND):")){
+    //console.log(theAnswer.substring(6));
     isCorrect = true;
-    theAnswer.split("|").forEach(function (value) {
-       if(!submittedAnswer.includes(value.toLowerCase())){isCorrect = false;}
+    theAnswer.substring(6).split("|").forEach(function (value) {
+       if(!submittedAnswer.toLowerCase().includes(value.toLowerCase())){isCorrect = false;}
     });
   }
-  if(theAnswer.startsWith("(OR)|")){
-    theAnswer.split("|").forEach(function (value) {
+  if(theAnswer.startsWith("(OR):")){
+    //console.log(theAnswer.substring(5));
+    theAnswer.substring(5).split("|").forEach(function (value) {
       if(submittedAnswer.toLowerCase() == value.toLowerCase()){isCorrect = true;}
     }); 
   }
   return isCorrect;
  }
 
- async function updateAnswer(teamQuestionId: string, questionId: string, questionNumber: string, passPlayed: string){
+ async function updateAnswer(questionId: string, questionNumber: string, passPlayed: string){
      if(questionId != null){
       if(passPlayed == "passTrue"){
         if(confirm("Are you sure you want to play a pass? You cannot play this question once you have played your pass")){
           console.log("You pressed OK!");
+            const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;           answerSpan.innerText = "Well done, that's the right answer";
+            await updateTeamAnswer(
+              String(window.sessionStorage.getItem('teamId')),
+              questionId,
+              "",
+              "",
+              "Y"
+            );
+            await setAssociatedTeamQuestionVisible(
+              quizId,
+              questionNumber
+            )
         } else {
           console.log("You pressed Cancel!")
           return;
         }
       }
       try {
-        const answer = await client.models.Answers.list({
-            filter: {
-              question_id: { eq: questionId }
-            }
-        });
-        console.log(answer.data[0].answer);
+        const answer = await client.models.Questions.get({id: questionId});
+        //console.log(answer.data[0].answer);
+
         if(answer != null){
           const submittedAnswer = document.getElementById("txb-"+ questionId) as HTMLInputElement;
           const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
-          if(isAnswerCorrect(submittedAnswer.value, String(answer.data[0].answer))){
-            console.log("correct");
+          if(isAnswerCorrect(submittedAnswer.value, String(answer.data?.answer))){
+
+            //console.log("correct");
             answerSpan.innerText = "Well done, that's the right answer";
-            updateTeamAnswer(
+            await updateTeamAnswer(
               String(window.sessionStorage.getItem('teamId')),
               questionId,
               submittedAnswer.value,
-              "Y"
+              "Y",
+              ""
             );
-            setAssociatedTeamAnswerVisible(
+            await setAssociatedTeamQuestionVisible(
               quizId,
-              teamQuestionId,
               questionNumber
             )
+            setRefreshTotals(Math.random);
           }else {
-            console.log("wrong");
-            answerSpan.innerText = "Hard luck, that's the wrong answer"
+            //console.log("wrong");
+            if(passPlayed != "Y"){
+              answerSpan.innerText = "Hard luck, that's the wrong answer"
+            }else{
+               answerSpan.innerText = "You played your pass"             
+            }
+
           }
         }
       } catch (err) {
@@ -79,8 +97,14 @@
     }
   }
 
-  async function updateTeamAnswer(teamId: string, questionId: string, teamAnswer: string, isCorrect: string){
-    const result = await client.models.TeamAnswers.list({
+  async function updateTeamAnswer(
+    teamId: string,
+    questionId: string,
+    teamAnswer: string,
+    isCorrect: string,
+    passPlayed: string
+  ){
+    const result = await client.models.TeamQuestions.list({
       filter: {
         and: [
           { question_id: { eq: questionId }},
@@ -90,20 +114,21 @@
     });
     const objTeamAnswer = result.data[0];
 
-    const updatedAnswer = await client.models.TeamAnswers.update({
+    await client.models.TeamQuestions.update({
       id: objTeamAnswer.id,
       team_answer: teamAnswer,
-      is_correct: isCorrect
+      is_correct: isCorrect,
+      pass_played: passPlayed
     })
-    console.log(updatedAnswer);
+    //console.log(updatedAnswer);
   }
 
-  async function setAssociatedTeamAnswerVisible(quizId: string, teamQuestionId: string, linkedQuestionNumber: string){
+  async function setAssociatedTeamQuestionVisible(quizId: string, linkedQuestionNumber: string){
     const questionNumberToUpdate = linkedQuestionNumber.substring(0, linkedQuestionNumber.length - 1) + "B";
-    console.log(linkedQuestionNumber);
-    console.log(questionNumberToUpdate);
-    console.log(teamQuestionId);
-    const result = await client.models.TeamAnswers.list({
+    //console.log(linkedQuestionNumber);
+    //console.log(questionNumberToUpdate);
+    //console.log(teamQuestionId);
+    const result = await client.models.TeamQuestions.list({
         filter: {
           and: [
             { quiz_id: { eq: quizId }},
@@ -116,7 +141,7 @@
 
     if (!answer) return;
 
-    await client.models.TeamAnswers.update({
+    await client.models.TeamQuestions.update({
       id: answer.id,
       show: "Y"   
     });
@@ -132,12 +157,13 @@
 
 const quizId = String(window.sessionStorage.getItem('quizId'));
 
- function QuizAccordion() {
-  
-   const [questions, setQuestions] = useState<Array<Schema["TeamAnswers"]["type"]>>([]);
+
+  const [refreshTotals, setRefreshTotals] = useState(0);
+
+   const [teamQuestions, setQuestions] = useState<Array<Schema["TeamQuestions"]["type"]>>([]);
  
    useEffect(() => {
-     client.models.TeamAnswers.observeQuery().subscribe({
+     client.models.TeamQuestions.observeQuery().subscribe({
        next: (data) => {
 
       const filtered = data.items.filter(
@@ -182,37 +208,37 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
   return (
     <div>
       <Accordion>
-      {questions.map(question => 
-        <Accordion.Item eventKey={"item-" + question.question_id} key={"item-" + question.question_id} >
-          <Accordion.Header>{headerText(String(question.question_number), String(question.location))}</Accordion.Header>
+      {teamQuestions.map(teamQuestion => 
+        <Accordion.Item eventKey={"item-" + teamQuestion.question_id} key={"item-" + teamQuestion.question_id} >
+          <Accordion.Header>{headerText(String(teamQuestion.question_number), String(teamQuestion.location))}</Accordion.Header>
           <Accordion.Body>
-            {question.question}
+            {teamQuestion.question}
             <br /><br />
-             <S3ObjectHtml quizId={question.quiz_id} questionId={question.question_id} fileType={question.category} />
+             <S3ObjectHtml quizId={teamQuestion.quiz_id} questionId={teamQuestion.question_id} fileType={teamQuestion.category} />
                 <br />
                 <Form>
-                  <Form.Group className="mb-3" controlId={"txb-" + question.question_id}>
+                  <Form.Group className="mb-3" controlId={"txb-" + teamQuestion.question_id}>
                       <Form.Control type="text" placeholder="your answer" />
                   </Form.Group>
                   <Button variant="primary" type="button" onClick={async () => {
-                    await updateAnswer(question.id, String(question.question_id), String(question.question_number), "passFalse")
+                    await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passFalse")
                     }}>
                     Submit
                   </Button>
                   &nbsp;&nbsp;&nbsp;
                   <Button variant="primary" type="button" onClick={async () => {
-                    await updateAnswer(question.id, String(question.question_id), String(question.question_number), "passTrue")
+                    await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passTrue")
                     }}>
-                    Play a pass
+                       Play a pass
                   </Button>
                   &nbsp;&nbsp;&nbsp;
-                  <span id={"ans-" + question.question_id}></span>
+                  <span id={"ans-" + teamQuestion.question_id}></span>
                 </Form>
            </Accordion.Body>
         </Accordion.Item>
       )}
     </Accordion>
-    <TeamTotals quizId={String(window.sessionStorage.getItem('quizId'))} teamId={String(window.sessionStorage.getItem('teamId'))} />
+    <TeamTotals refreshKey={refreshTotals} quizId={String(window.sessionStorage.getItem('quizId'))} teamId={String(window.sessionStorage.getItem('teamId'))} />
     </div>
   );
 

@@ -31,21 +31,6 @@ const schema = a.schema({
       team_leader_email: a.string(),
       members: a.string()
     }),
-  TeamAnswers: a
-    .model({
-      quiz_id: a.string(),
-      team_id: a.id(),
-      question_id: a.string(),
-      question_number: a.string(),
-      question: a.string(),
-      question_type: a.string(),
-      category: a.string(),
-      location: a.string(),
-      team_answer: a.string(),
-      is_correct: a.string(),
-      pass_played: a.string(),
-      show: a.string()
-    }),
     TeamQuestions: a
     .model({
       quiz_id: a.string(),
@@ -60,13 +45,6 @@ const schema = a.schema({
       is_correct: a.string(),
       pass_played: a.string(),
       show: a.string()
-    }),
-  Answers: a
-    .model({
-      quiz_id: a.string(),
-      question_number: a.string(),
-      question_id: a.string(),
-      answer: a.string()
     })
     
 }).authorization((allow) => [allow.publicApiKey()]);

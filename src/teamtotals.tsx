@@ -3,6 +3,9 @@ import { generateClient } from "aws-amplify/api";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 import type { Schema } from "../amplify/data/resource";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
  Amplify.configure(outputs);
 
@@ -11,14 +14,18 @@ import type { Schema } from "../amplify/data/resource";
  type TeamTotalsProps = {
   quizId: string;
   teamId: string;
+  refreshKey: number;
 };
 
-export default function TeamTotals({quizId, teamId}: TeamTotalsProps) {
-  const [count, setCount] = useState<string | null>(null);
-
+export default function TeamTotals({refreshKey, quizId, teamId}: TeamTotalsProps) {
+  const [puzzleCount, setPuzzleCount] = useState<string | null>(null);
+  const [locationCount, setLocationCount] = useState<string | null>(null);
+  
+  if(refreshKey == null)(console.log(refreshKey));
+  
   useEffect(() => {
     const loadCount = async () => {
-      const result = await client.models.TeamAnswers.list({
+      const result = await client.models.TeamQuestions.list({
       filter: {
         and: [
           { quiz_id: { eq: quizId }},
@@ -27,30 +34,32 @@ export default function TeamTotals({quizId, teamId}: TeamTotalsProps) {
         ]
       }
     });
-    let puzzleCount: number = 0;
-    let locationCount: number = 0;
+    let pCount: number = 0;
+    let lCount: number = 0;
     
     result.data.forEach(function (value) {
-        console.log(String(value.question_number).substring(2,1));
-      if(String(value.question_number).substring(3,0) == "A"){
-        puzzleCount ++;
+        console.log("hello" + String(value.question_number).substring(2,3));
+      if(String(value.question_number).substring(2,3) == "A"){
+        pCount ++;
       }else{
-        locationCount ++;
+        lCount ++;
       }
     }); 
-    let totals = "solved puzzles: " + puzzleCount;
-    totals += "<br />solved Location challenges: " + locationCount;
-    totals += "Total score: " + puzzleCount + locationCount;
-      setCount(totals);
+      setPuzzleCount(String(pCount));
+      setLocationCount(String(lCount));
     };
 
     loadCount();
-  }, []);
+  }, [refreshKey, quizId, teamId]);
 
   return (
-    <p>
-      {count}
-    </p>
+    <Container>
+      <Row>
+        <Col>Puzzles Solved: {puzzleCount}</Col>
+        <Col>Location Challenges Solved: {locationCount}</Col>
+        <Col>Total Score: {Number(puzzleCount) + Number(locationCount)}</Col>
+      </Row>
+    </Container>
   );
 }
 
