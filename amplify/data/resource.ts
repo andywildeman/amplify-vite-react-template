@@ -11,7 +11,6 @@ const schema = a.schema({
     .model({
       quiz_id: a.string(),
       question_number: a.string(),
-      image: a.string(),
       question: a.string(),
       question_type: a.string(),
       location: a.string(),
@@ -39,10 +38,13 @@ const schema = a.schema({
       question_id: a.string(),
       question_number: a.string(),
       question: a.string(),
+      question_type: a.string(),
       category: a.string(),
+      location: a.string(),
       team_answer: a.string(),
       is_correct: a.string(),
-      pass_played: a.string()
+      pass_played: a.string(),
+      show: a.string()
     }),
   Answers: a
     .model({

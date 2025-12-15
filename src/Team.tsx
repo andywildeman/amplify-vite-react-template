@@ -9,11 +9,12 @@ import { generateClient } from "aws-amplify/api";
  import type { Schema } from "../amplify/data/resource";
 //import { Color } from 'aws-cdk-lib/aws-cloudwatch';
 //import { Container } from 'react-bootstrap';
-  
+
+
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
-
+ 
  async function createTeam() {
     const quizId = String(window.sessionStorage.getItem('quizId'));
     const teamName = (document.getElementById("txb-team-name") as HTMLInputElement).value;
@@ -37,6 +38,9 @@ import { generateClient } from "aws-amplify/api";
     }
     if((document.getElementById("txb-team-member6") as HTMLInputElement).value != ""){
       teamMembers += (document.getElementById("txb-team-member6") as HTMLInputElement).value  + "|";
+    }
+    if(teamMembers.substring(teamMembers.length - 1) == "|"){
+      teamMembers = teamMembers.substring(0, teamMembers.length -1);
     }
 
   try {
@@ -68,6 +72,7 @@ async function getAllQuestions(teamId: string){
         teamId,
         String(question.quiz_id),
         question.id,
+        String(question.question_number),
         String(question!.question_type),
         String(question.question)
     );
@@ -80,12 +85,13 @@ async function getAllQuestions(teamId: string){
   }
 }
 
-async function createTeamQuestion(teamId: string, quizId: string, questionId: string, question: string, category: string) {
+async function createTeamQuestion(teamId: string, quizId: string, questionId: string, questionNumber: string,  question: string, category: string) {
   try {
     const newTeam = await client.models.TeamAnswers.create({
       team_id: teamId,
       quiz_id: quizId,
       question_id: questionId,
+      question_number: questionNumber,
       question: question,
       category: category,
       team_answer: "",
@@ -113,6 +119,9 @@ function Team() {
             <Form>
                 <Form.Group className="mb-3" controlId="txb-team-name">
                   <Form.Control type="text" placeholder="team name" />
+                </Form.Group>
+                 <Form.Group className="mb-3" controlId="txb-team-email">
+                  <Form.Control type="text" defaultValue={String(window.sessionStorage.getItem('userEmail'))} disabled />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="txb-team-leader">
                     <Form.Control type="text" placeholder="team leader" />
