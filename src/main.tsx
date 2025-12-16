@@ -21,7 +21,9 @@ async function getQuiz(quizId: string) {
   //console.log(quizId);
   if (quizId != null) {
     try {
-      await client.models.Quiz.get({ id: quizId });
+      const theQuiz = await client.models.Quiz.get({ id: quizId });
+      window.sessionStorage.setItem("quizId", String(theQuiz.data?.id));
+      window.sessionStorage.setItem("quizName", String(theQuiz.data?.name));
       //console.log(quiz);
       getUserEmail(quizId);        
       
@@ -61,6 +63,7 @@ async function getUsersTeam(quizId: string, teamLeaderEmail: string) {
 
       if (teams.data[0] != null) {
         window.sessionStorage.setItem("teamId", team.id);
+        window.sessionStorage.setItem("teamName", String(team.name));
         renderControls(team.id);
         //init(String(quizId), teams.data[0].id);
       }else{
@@ -77,7 +80,7 @@ const urlParams = new URLSearchParams(queryString);
 //console.log(urlParams);
 if(urlParams.get('quizId') != null){
   console.log(urlParams.get('quizId'));
-  window.sessionStorage.setItem("quizId", String(urlParams.get('quizId')));
+  //window.sessionStorage.setItem("quizId", String(urlParams.get('quizId')));
   getQuiz(String(urlParams.get('quizId')));
 }
 

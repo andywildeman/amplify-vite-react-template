@@ -36,6 +36,7 @@ function QuizAccordion() {
  }
 
  async function updateAnswer(questionId: string, questionNumber: string, passPlayed: string){
+     const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
      if(questionId != null){
       if(passPlayed == "passTrue"){
         if(confirm("Are you sure you want to play a pass? You cannot play this question once you have played your pass")){
@@ -48,6 +49,7 @@ function QuizAccordion() {
               "",
               "Y"
             );
+            answerSpan.innerText = "You played your pass";
             await setAssociatedTeamQuestionVisible(
               quizId,
               questionNumber
@@ -63,7 +65,6 @@ function QuizAccordion() {
 
         if(answer != null){
           const submittedAnswer = document.getElementById("txb-"+ questionId) as HTMLInputElement;
-          const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
           if(isAnswerCorrect(submittedAnswer.value, String(answer.data?.answer))){
 
             //console.log("correct");
@@ -82,7 +83,7 @@ function QuizAccordion() {
             setRefreshTotals(Math.random);
           }else {
             //console.log("wrong");
-            if(passPlayed != "Y"){
+            if(passPlayed != "passTrue"){
               answerSpan.innerText = "Hard luck, that's the wrong answer"
             }else{
                answerSpan.innerText = "You played your pass"             
@@ -149,10 +150,29 @@ function QuizAccordion() {
 
   function headerText(questionNumber: string, location: string){
     if(questionNumber.substring(questionNumber.length -1) == "A"){
-      return("Question Number: " + questionNumber.substring(0, questionNumber.length -1))
+      return("Puzzle Number: " + questionNumber.substring(0, questionNumber.length -1))
     }else{
       return("Location: " + questionNumber.substring(0, questionNumber.length -1) + " " + location)
     }
+  }
+
+  function confirmationText(isCorrect: string, passPlayed: string){
+    if(isCorrect == "Y"){
+      return("You answered this question correctly");
+    }
+    if(passPlayed == "Y"){
+      return("You played your pass");
+    }
+  }
+
+    function buttonEnabled(isCorrect: string, passPlayed: string){
+      if(isCorrect == "Y" || passPlayed == "Y"){
+        return {
+          disabled: true || true
+        };
+      }else{
+        return "";
+      }
   }
 
 const quizId = String(window.sessionStorage.getItem('quizId'));
@@ -185,26 +205,11 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
 
     //return () => sub.unsubscribe();
    }, []);
+   
+   //teamQuestions.forEach(function (teamQuestion) {
+   // if(teamQuestion)
+   //})
 
-//   const quizId = 'c7534ee4-6115-48ac-a929-2e3f9ff9c770';
-//   const [questions, setQuestions] = useState([]);
-
-// useEffect(() => {
-//   const load = async () => {
-//     const result = await client.models.Questions.list({
-//       filter: { quiz_id: { eq: quizId } }
-//     });
-
-//     const sorted = result.data.sort(
-//       (a, b) => Number(a.number) - Number(b.number)
-//     );
-
-//     setQuestions(result.data);
-//   };
-
-//   load();
-// }, [quizId]);
-            
   return (
     <div>
       <Accordion>
@@ -218,21 +223,21 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
                 <br />
                 <Form>
                   <Form.Group className="mb-3" controlId={"txb-" + teamQuestion.question_id}>
-                      <Form.Control type="text" placeholder="your answer" />
+                      <Form.Control type="text" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}  placeholder="your answer" value={String(teamQuestion.team_answer)} />
                   </Form.Group>
-                  <Button variant="primary" type="button" onClick={async () => {
+                  <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnAnswer-" + teamQuestion.question_id} type="button" onClick={async () => {
                     await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passFalse")
                     }}>
                     Submit
                   </Button>
                   &nbsp;&nbsp;&nbsp;
-                  <Button variant="primary" type="button" onClick={async () => {
+                  <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnPass-" + teamQuestion.question_id} type="button" onClick={async () => {
                     await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passTrue")
                     }}>
                        Play a pass
                   </Button>
                   &nbsp;&nbsp;&nbsp;
-                  <span id={"ans-" + teamQuestion.question_id}></span>
+                  <span id={"ans-" + teamQuestion.question_id}>{confirmationText(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}</span>
                 </Form>
            </Accordion.Body>
         </Accordion.Item>

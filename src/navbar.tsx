@@ -23,7 +23,7 @@ export default function AppNavbar() {
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
-        <Navbar.Brand href="/">Treasure Hunt</Navbar.Brand>
+        <Navbar.Brand href="/">{String(window.sessionStorage.getItem('quizName'))}</Navbar.Brand>
                
           {/* Auth Buttons */}
           {user ? (

@@ -53,7 +53,7 @@ import { generateClient } from "aws-amplify/api";
     });
 
     console.log("Team created:", newTeam);
-    const teamQuestions = await getAllQuestions(String(newTeam.data!.id))
+    const teamQuestions = await getAllQuestions(String(quizId), String(newTeam.data!.id))
     console.log(teamQuestions);
 
     return newTeam;
@@ -62,15 +62,19 @@ import { generateClient } from "aws-amplify/api";
   }
 }
 
-async function getAllQuestions(teamId: string){
+async function getAllQuestions(quizId: string, teamId: string){
   try {
-    const questions = await client.models.Questions.list({    });
+    const questions = await client.models.Questions.list({
+      filter: {
+        quiz_id: { eq: quizId }
+      }
+    });
     console.log(questions);
     for (const question of questions.data) {
       console.log(question);
       const newTeamQuestion = await createTeamQuestion(
         teamId,
-        String(question.quiz_id),
+        String(quizId),
         question.id,
         String(question.question_number),
         String(question.question),
@@ -81,14 +85,16 @@ async function getAllQuestions(teamId: string){
     );
     console.log(newTeamQuestion);
   }
+  window.location.reload();
  return (questions);   
 
   } catch (error) {
-    console.error("Error listing questions:", error);
+    console.log("Error listing questions:", error);
   }
 }
 
-async function createTeamQuestion(teamId: string,
+async function createTeamQuestion(
+  teamId: string,
   quizId: string,
   questionId: string,
   questionNumber: string, 
@@ -114,6 +120,7 @@ async function createTeamQuestion(teamId: string,
 
 
     console.log("Team created:", newTeam);
+    
     return newTeam;
   } catch (error) {
     console.error("Error creating team:", error);

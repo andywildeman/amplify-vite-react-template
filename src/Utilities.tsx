@@ -5,6 +5,7 @@
 //import { Color } from 'aws-cdk-lib/aws-cloudwatch';
 //import { Container } from 'react-bootstrap';
  import Button from 'react-bootstrap/Button';
+//import { a } from "@aws-amplify/backend";
  
   Amplify.configure(outputs);
 
@@ -13,86 +14,106 @@
 export default function Utilities(){
 
 
-  async function getAllQuestions(){
-  try {
-    const questions = await client.models.Questions.list({    });
-    console.log(questions);
-    for (const question of questions.data) {
-      console.log(question);
-      const newAnswer = await createAnswers(
-        String(question.quiz_id),
-        question.id,
-        String(question.question_number)
-    );
-    console.log(newAnswer);
-  }
- return (questions);   
-
-  } catch (error) {
-    console.error("Error listing questions:", error);
-  }
-} 
-
-  async function createAnswers(quizId: string, questionId: string, questionNumber: string) {
-  try {
-    const newTeam = await client.models.TeamQuestions.create({
-      quiz_id: quizId,
-      question_id: questionId,
-      question_number: questionNumber
-    });
-
-    console.log("Answer created:", newTeam);
-    return newTeam;
-  } catch (error) {
-    console.error("Error creating team:", error);
-  }
-}
-
-
- /*    async function getAllQuestions(){
+    async function resetTeamQuestions(){
         try {
-            const questions = await client.models.Questions.list({    });
-            console.log(questions);
-            for (const question of questions.data) {
-            console.log(question);
-            const newQuestion = await createQuestions(
-                String(question.quiz_id),
-                String(question.question_number)
-            );
-            console.log(newQuestion);
-        }
-        return (questions);   
+            const teamQuestions = await client.models.TeamQuestions.list({    });
+            //console.log(questions);
+            for (const teamQuestion of teamQuestions.data) {
 
-        } catch (error) {
-            console.error("Error listing questions:", error);
+                if(String(teamQuestion.question_number).substring(String(teamQuestion.question_number).length -1) == "A"){
+                    await client.models.TeamQuestions.update({
+                    id: teamQuestion.id,
+                    team_answer: "",
+                    show: "Y",
+                    is_correct: "",
+                    pass_played: "",
+                    question_type: "puzzle"
+                    });
+                }else{
+                    await client.models.TeamQuestions.update({
+                    id: teamQuestion.id,
+                    team_answer: "",
+                    show: "",
+                    is_correct: "",
+                    pass_played: "",
+                    question_type: "location"
+                    })
+                }
+            }
+        }catch(err){
+            console.error("Error:", err);
+        }
+    } 
+
+    async function createNewQUiz(name: string, startTime: string){
+        try {
+            const newQuiz = await client.models.Quiz.create({
+                name: name,
+                start_time: startTime
+            });
+            console.log(String(newQuiz.data?.id));
+            createNewQUizQuestions(String(newQuiz.data?.id))
+        }catch(err){
+            console.log("Error:", err);
+        } 
+    }   
+
+    async function createNewQUizQuestions(newQuizId: string){
+        console.log("question creation commenced");
+        try{
+            for (let i = 1; i<11; i++) {
+                console.log ("Block statement execution no." + i);
+                let questionNumber = i + "A";
+                if(questionNumber.length < 3){
+                    questionNumber = "0" + questionNumber;
+                }
+                await client.models.Questions.create({
+                    quiz_id: newQuizId,
+                    question_number: questionNumber,
+                    question: "Add together: " + String(i) + " + " + String(i),
+                    question_type: "puzzle",
+                    location: "",
+                    category: "Text",
+                    answer: String(i + i),
+                    show: "Y"
+                });
+                questionNumber = i + "B";
+                if(questionNumber.length < 3){
+                    questionNumber = "0" + questionNumber;
+                }
+                await client.models.Questions.create({
+                    quiz_id: newQuizId,
+                    question_number: questionNumber,
+                    question: "What is " + String(i) + "squared",
+                    question_type: "location",
+                    location: "Location: " + questionNumber,
+                    category: "",
+                    answer: String(i * i),
+                    show: ""
+                });
+            }
+    
+        }catch(err){
+            console.log("Error:", err);
+
         }
     }
 
 
-
-    async function createQuestions(quizId: string, questionNumber: string) {
-        questionNumber = questionNumber.substring(0, questionNumber.length -1) + "B"
-        try {
-            const newQuestion = await client.models.Questions.create({
-            quiz_id: quizId,
-            question_number: questionNumber,
-            question: questionNumber,
-            category: "Text"
-            });
-
-            console.log("Question created:", newQuestion);
-            return newQuestion;
-        } catch (error) {
-            console.error("Error creating team:", error);
-        }
-    } */
-
     return(
-        <Button variant="primary" type="button" onClick={async () => {
-        await getAllQuestions()
-        }}>
-        make tables
-        </Button>
-  
+        <div>
+            <Button variant="primary" type="button" onClick={async () => {
+            await resetTeamQuestions()
+            }}>
+            Reset team questions
+            </Button>
+
+            <Button variant="primary" type="button" onClick={async () => {
+            await createNewQUiz("Test Quiz", "2025-11-30T10:40:38Z")
+            }}>
+            Create New Quiz Tables
+            </Button>
+        </div> 
     )
+
 }
