@@ -114,7 +114,7 @@ function QuizAccordion() {
       }
     });
     const objTeamAnswer = result.data[0];
-
+    console.log(teamAnswer);
     await client.models.TeamQuestions.update({
       id: objTeamAnswer.id,
       team_answer: teamAnswer,
@@ -173,7 +173,7 @@ function QuizAccordion() {
       }else{
         return "";
       }
-  }
+    }
 
 const quizId = String(window.sessionStorage.getItem('quizId'));
 
@@ -223,7 +223,7 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
                 <br />
                 <Form>
                   <Form.Group className="mb-3" controlId={"txb-" + teamQuestion.question_id}>
-                      <Form.Control type="text" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}  placeholder="your answer" value={String(teamQuestion.team_answer)} />
+                      <Form.Control type="text" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}  placeholder="your answer" />
                   </Form.Group>
                   <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnAnswer-" + teamQuestion.question_id} type="button" onClick={async () => {
                     await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passFalse")
