@@ -6,14 +6,29 @@
 //import { Container } from 'react-bootstrap';
  import Button from 'react-bootstrap/Button';
 //import { a } from "@aws-amplify/backend";
- 
+import { SelectField } from '@aws-amplify/ui-react';
+import { useEffect, useState } from 'react';
+import AdminAccordion from "./admin-accordion";
+
+
   Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
 
 export default function Utilities(){
 
+  const [quizzes, setQuizzes] = useState<Array<Schema["Quiz"]["type"]>>([]);
+  const [selectedQuiz, setSelectedQuiz] = useState('');
 
+  async function getQuizzes() {
+    const result = await client.models.Quiz.list({});
+    setQuizzes(result.data);
+  }
+
+  useEffect(() => {
+    getQuizzes();
+  }, []);
+    
     async function resetTeamQuestions(){
         try {
             const teamQuestions = await client.models.TeamQuestions.list({    });
@@ -99,9 +114,29 @@ export default function Utilities(){
         }
     }
 
+    function updateSelectedQuiz(quizId: string){
+        setSelectedQuiz(quizId);
+        window.sessionStorage.setItem("quizId", String(quizId));
+    }
 
     return(
         <div>
+            <div>
+                <SelectField label="Quiz" 
+                    value={selectedQuiz}
+                     onChange={(e) => updateSelectedQuiz(e.target.value)}
+                >
+                    <option value="">Select a quiz</option>
+                    {quizzes.map((quiz) => (
+                    <option key={quiz.id} value={quiz.id}>
+                        {quiz.name}
+                    </option>
+                    ))}
+                </SelectField>
+            </div>
+            <p>{selectedQuiz}</p>
+
+            <AdminAccordion quizId={selectedQuiz}></AdminAccordion>
             <Button variant="primary" type="button" onClick={async () => {
             await resetTeamQuestions()
             }}>
@@ -114,6 +149,7 @@ export default function Utilities(){
             Create New Quiz Tables
             </Button>
         </div> 
+
     )
 
 }

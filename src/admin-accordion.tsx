@@ -1,20 +1,23 @@
  import { useEffect, useState} from "react"
  import Accordion from 'react-bootstrap/Accordion';  
- import type { Schema } from "../amplify/data/resource";
+ import type { Schema } from "../amplify/data/resource.ts";
  import { Amplify } from "aws-amplify";
  import outputs from "../amplify_outputs.json";
  import S3ObjectHtml from "./S3File.tsx";
  import Button from 'react-bootstrap/Button';
  import Form from 'react-bootstrap/Form';
  import { generateClient } from "aws-amplify/api";
- import TeamTotals from "./teamtotals.tsx";
  //import { update } from "@aws-amplify/data";
 
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
 
-function QuizAccordion() {
+  type accordionProps = {
+    quizId: string;
+  };
+
+export default function AdminAccordion({quizId}: accordionProps) {
 
  function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
   let isCorrect = false;
@@ -76,11 +79,7 @@ function QuizAccordion() {
               "Y",
               ""
             );
-            await setAssociatedTeamQuestionVisible(
-              quizId,
-              questionNumber
-            )
-            setRefreshTotals(Math.random);
+
           }else {
             //console.log("wrong");
             if(passPlayed != "passTrue"){
@@ -156,15 +155,6 @@ function QuizAccordion() {
     }
   }
 
-  function confirmationText(isCorrect: string, passPlayed: string){
-    if(isCorrect == "Y"){
-      return("You answered this question correctly");
-    }
-    if(passPlayed == "Y"){
-      return("You played your pass");
-    }
-  }
-
   function displayTeamAnswer(teamAnswer: string){
     if(teamAnswer == "null"){
       return("");
@@ -173,31 +163,18 @@ function QuizAccordion() {
     }
   }
 
-    function buttonEnabled(isCorrect: string, passPlayed: string){
-      if(isCorrect == "Y" || passPlayed == "Y"){
-        return {
-          disabled: true || true
-        };
-      }else{
-        return "";
-      }
-    }
 
-const quizId = String(window.sessionStorage.getItem('quizId'));
+//const quizId = String(window.sessionStorage.getItem('quizId'));
 
-
-  const [refreshTotals, setRefreshTotals] = useState(0);
-
-   const [teamQuestions, setQuestions] = useState<Array<Schema["TeamQuestions"]["type"]>>([]);
+   const [questions, setQuestions] = useState<Array<Schema["Questions"]["type"]>>([]);
  
    useEffect(() => {
-     client.models.TeamQuestions.observeQuery().subscribe({
+     client.models.Questions.observeQuery().subscribe({
        next: (data) => {
 
       const filtered = data.items.filter(
         q => 
-        q.quiz_id === quizId &&
-        q.show === 'Y'
+        q.quiz_id === quizId 
       );
 
       // 2. SORT
@@ -212,7 +189,7 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
     });
 
     //return () => sub.unsubscribe();
-   }, []);
+   }, [quizId]);
    
    //teamQuestions.forEach(function (teamQuestion) {
    // if(teamQuestion)
@@ -221,42 +198,36 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
   return (
     <div>
       <Accordion>
-      {teamQuestions.map(teamQuestion => 
-        <Accordion.Item eventKey={"item-" + teamQuestion.question_id} key={"item-" + teamQuestion.question_id} >
-          <Accordion.Header>{headerText(String(teamQuestion.question_number), String(teamQuestion.location))}</Accordion.Header>
+      {questions.map(question => 
+        <Accordion.Item eventKey={"item-" + question.id} key={"item-" + question.id} >
+          <Accordion.Header>{headerText(String(question.question_number), String(question.location))}</Accordion.Header>
           <Accordion.Body>
-            {teamQuestion.question}
+            {question.id}
+            <br />
+            {question.question}
             <br /><br />
-             <S3ObjectHtml quizId={teamQuestion.quiz_id} questionId={teamQuestion.question_id} fileType={teamQuestion.category} />
+             <S3ObjectHtml quizId={question.quiz_id} questionId={question.id} fileType={question.category} />
                 <br />
                 <Form>
-                  <Form.Group className="mb-3" controlId={"txb-" + teamQuestion.question_id}>
-                      <Form.Control type="text" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} defaultValue={displayTeamAnswer(String(teamQuestion.team_answer))} placeholder="your answer" />
+                  <Form.Group className="mb-3" controlId={"txb-" + question.id}>
+                      <Form.Control type="text" defaultValue={displayTeamAnswer(String(question.answer))} placeholder="your answer" />
                   </Form.Group>
-                  <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnAnswer-" + teamQuestion.question_id} type="button" onClick={async () => {
-                    await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passFalse")
+                  <Button variant="primary" onClick={async () => {
+                    await updateAnswer(String(question.id), String(question.question_number), "passFalse")
                     }}>
                     Submit
                   </Button>
                   &nbsp;&nbsp;&nbsp;
-                  <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnPass-" + teamQuestion.question_id} type="button" onClick={async () => {
-                    await updateAnswer(String(teamQuestion.question_id), String(teamQuestion.question_number), "passTrue")
-                    }}>
-                       Play a pass
-                  </Button>
-                  &nbsp;&nbsp;&nbsp;
-                  <span id={"ans-" + teamQuestion.question_id}>{confirmationText(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}</span>
-                </Form>
+                 </Form>
            </Accordion.Body>
         </Accordion.Item>
       )}
     </Accordion>
-    <TeamTotals refreshKey={refreshTotals} quizId={String(window.sessionStorage.getItem('quizId'))} teamId={String(window.sessionStorage.getItem('teamId'))} />
-    </div>
+     </div>
   );
 
  }
  
- export default QuizAccordion;
+
  
 
