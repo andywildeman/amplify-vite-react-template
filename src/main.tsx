@@ -14,7 +14,7 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import Utilities from "./Utilities.tsx";
 import { getCurrentUser } from 'aws-amplify/auth';
-import { render } from "react-dom";
+//import { render } from "react-dom";
 
 Amplify.configure(outputs);
 const client = generateClient<Schema>();
