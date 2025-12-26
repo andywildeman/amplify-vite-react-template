@@ -12,10 +12,21 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import Utilities from "./Utilities.tsx"
+import Utilities from "./Utilities.tsx";
+import { getCurrentUser } from 'aws-amplify/auth';
+import { render } from "react-dom";
 
 Amplify.configure(outputs);
 const client = generateClient<Schema>();
+
+async function isUserAuthenticated() {
+  try {
+    await getCurrentUser();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function getQuiz(quizId: string) {
   //console.log(quizId);
@@ -25,7 +36,12 @@ async function getQuiz(quizId: string) {
       window.sessionStorage.setItem("quizId", String(theQuiz.data?.id));
       window.sessionStorage.setItem("quizName", String(theQuiz.data?.name));
       //console.log(quiz);
-      getUserEmail(quizId);        
+      if(await isUserAuthenticated()){
+          getUserEmail(quizId); 
+      }else{
+        renderControls("");
+      }
+       
       
     } catch (err) {
       console.error("Error:", err);

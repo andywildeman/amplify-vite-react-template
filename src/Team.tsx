@@ -1,4 +1,4 @@
-//import { useState } from 'react';
+import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 //import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
@@ -14,7 +14,17 @@ import { generateClient } from "aws-amplify/api";
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
- 
+
+
+function Team() {
+  const [isUpdating, setIsUpdating] = useState(false); 
+
+ const Spinner = () => (
+    <div className="spinner">
+      ⏳ Updating...
+    </div>
+  );
+
  async function createTeam() {
     const quizId = String(window.sessionStorage.getItem('quizId'));
     const teamName = (document.getElementById("txb-team-name") as HTMLInputElement).value;
@@ -105,6 +115,7 @@ async function createTeamQuestion(
   show: string
 ) {
   try {
+    setIsUpdating(true);
     const newTeam = await client.models.TeamQuestions.create({
       team_id: teamId,
       quiz_id: quizId,
@@ -123,12 +134,13 @@ async function createTeamQuestion(
     
     return newTeam;
   } catch (error) {
-    console.error("Error creating team:", error);
+    console.error("Update failed", error);
+  } finally {
+    setIsUpdating(false);
   }
 }
 
 
-function Team() {
   const styleObj = {
     padding: "10px",
     border: "solid"
@@ -169,14 +181,14 @@ function Team() {
                 </Form.Group>
             </Form>
 
-          <Button variant="primary" style={btnStyle} onClick={async () => {
+          <Button variant="primary" disabled={isUpdating} style={btnStyle} onClick={async () => {
                 //e.preventDefault(); 
                 
                 await createTeam();
               }}>
             Create Team
           </Button>
-
+          {isUpdating && <Spinner />}
     </div>
   );
 }
