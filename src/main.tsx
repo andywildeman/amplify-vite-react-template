@@ -90,7 +90,9 @@ async function getUsersTeam(quizId: string, teamLeaderEmail: string) {
       if (teams.data[0] != null) {
         window.sessionStorage.setItem("teamId", team.id);
         window.sessionStorage.setItem("teamName", String(team.name));
+        console.log(team.id);
         renderControls(team.id);
+
         //init(String(quizId), teams.data[0].id);
       }else{
         renderControls("");
