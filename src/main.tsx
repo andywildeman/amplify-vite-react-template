@@ -35,6 +35,7 @@ async function getQuiz(quizId: string) {
       const theQuiz = await client.models.Quiz.get({ id: quizId });
       window.sessionStorage.setItem("quizId", String(theQuiz.data?.id));
       window.sessionStorage.setItem("quizName", String(theQuiz.data?.name));
+      window.sessionStorage.setItem("startTime", String(theQuiz.data?.start_time));
       const timeNow = new Date();
       const quizStartTime = new Date(String(theQuiz.data?.start_time));
       console.log(timeNow);
@@ -123,7 +124,7 @@ else{
 function renderControls(teamId: string){
   //console.log(teamId);
   //console.log(getQuiz('c7534ee4-6115-48ac-a929-2e3f9ff9c770'))
-
+  const startDateTime = new Date(String(window.sessionStorage.getItem('startTime')));
   const root = createRoot(document.getElementById("root")!)
   if(String(window.sessionStorage.getItem('admin')) == "true"){
     root.render(
@@ -131,6 +132,29 @@ function renderControls(teamId: string){
         <Authenticator>
           <Utilities />
         </Authenticator>
+      </React.StrictMode>
+    )
+  }else if(String(window.sessionStorage.getItem('quizStarted')) != "Y" && teamId == ""){
+    root.render(
+      <React.StrictMode>
+        <Authenticator>
+          <AppNavbar />
+          <Team />
+          <div>
+            This treasure hunt does not start until {startDateTime.toDateString() + " : " + startDateTime.toTimeString()}
+          </div>      
+        </Authenticator>  
+      </React.StrictMode>
+    )
+  }else if(String(window.sessionStorage.getItem('quizStarted')) != "Y" && teamId != ""){
+    root.render(
+      <React.StrictMode>
+        <Authenticator>
+          <AppNavbar />
+          <div>
+            This treasure hunt does not start until {startDateTime.toDateString() + " : " + startDateTime.toTimeString()}
+          </div>      
+        </Authenticator>  
       </React.StrictMode>
     )
   }else if(teamId != ""){
