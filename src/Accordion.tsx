@@ -184,6 +184,7 @@ function QuizAccordion() {
     }
 
 const quizId = String(window.sessionStorage.getItem('quizId'));
+const teamId = String(window.sessionStorage.getItem('teamId'));
 
 
   const [refreshTotals, setRefreshTotals] = useState(0);
@@ -197,6 +198,7 @@ const quizId = String(window.sessionStorage.getItem('quizId'));
       const filtered = data.items.filter(
         q => 
         q.quiz_id === quizId &&
+        q.team_id === teamId &&
         q.show === 'Y'
       );
 

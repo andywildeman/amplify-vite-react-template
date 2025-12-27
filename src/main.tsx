@@ -35,6 +35,16 @@ async function getQuiz(quizId: string) {
       const theQuiz = await client.models.Quiz.get({ id: quizId });
       window.sessionStorage.setItem("quizId", String(theQuiz.data?.id));
       window.sessionStorage.setItem("quizName", String(theQuiz.data?.name));
+      const timeNow = new Date();
+      const quizStartTime = new Date(String(theQuiz.data?.start_time));
+      console.log(timeNow);
+      console.log(quizStartTime);
+      if(timeNow >= quizStartTime){
+        console.log("quiz started")
+        window.sessionStorage.setItem("quizStarted", "Y");
+      }else{
+        window.sessionStorage.setItem("quizStarted", "N");
+      }
       //console.log(quiz);
       if(await isUserAuthenticated()){
           getUserEmail(quizId); 
