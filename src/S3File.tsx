@@ -22,7 +22,7 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
           path: filePath
           //path: "c7534ee4-6115-48ac-a929-2e3f9ff9c770/pyramid.png"
         });
-        console.log(url.toString());
+        //console.log(url.toString());
         setFileUrl(url.toString());
         
       }
