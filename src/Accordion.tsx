@@ -61,7 +61,6 @@ function QuizAccordion() {
             )
         } else {
           console.log("You pressed Cancel!")
-          setElementTempDisabled(false);
           return;
         }
       }
@@ -101,8 +100,9 @@ function QuizAccordion() {
 
           }
         }
+        setElementTempDisabled(false);
       } catch (err) {
-
+        setElementTempDisabled(false);
         console.error("Error:", err);
       }  
     }
