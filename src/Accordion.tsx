@@ -16,32 +16,36 @@
 
 function QuizAccordion() {
 
+  const [elementTempDisabled, setElementTempDisabled] = useState(false);
+
+
  function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
   let isCorrect = false;
-  if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
+  if(submittedAnswer.toLowerCase().trim() == theAnswer.toLowerCase().trim()){isCorrect = true;}
   if(theAnswer.startsWith("(AND):")){
     //console.log(theAnswer.substring(6));
     isCorrect = true;
     theAnswer.substring(6).split("|").forEach(function (value) {
-       if(!submittedAnswer.toLowerCase().includes(value.toLowerCase())){isCorrect = false;}
+       if(!submittedAnswer.toLowerCase().trim().includes(value.toLowerCase().trim())){isCorrect = false;}
     });
   }
   if(theAnswer.startsWith("(OR):")){
     //console.log(theAnswer.substring(5));
     theAnswer.substring(5).split("|").forEach(function (value) {
-      if(submittedAnswer.toLowerCase() == value.toLowerCase()){isCorrect = true;}
+      if(submittedAnswer.toLowerCase().trim() == value.toLowerCase().trim()){isCorrect = true;}
     }); 
   }
   return isCorrect;
  }
 
  async function updateAnswer(teamQuestionId: string, questionId: string, questionNumber: string, passPlayed: string){
-     const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
+  setElementTempDisabled(true);   
+  const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
      if(questionId != null){
       if(passPlayed == "passTrue"){
         if(confirm("Are you sure you want to play a pass? You cannot play this question once you have played your pass")){
           console.log("You pressed OK!");
-            const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;           answerSpan.innerText = "Well done, that's the right answer";
+            const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
             await updateTeamAnswer(
               //String(window.sessionStorage.getItem('teamId')),
               teamQuestionId,
@@ -57,6 +61,7 @@ function QuizAccordion() {
             )
         } else {
           console.log("You pressed Cancel!")
+          setElementTempDisabled(false);
           return;
         }
       }
@@ -86,9 +91,12 @@ function QuizAccordion() {
           }else {
             //console.log("wrong");
             if(passPlayed != "passTrue"){
-              answerSpan.innerText = "Hard luck, that's the wrong answer"
+              answerSpan.innerText = "Hard luck, that's the wrong answer";
+              setTimeout(() => {
+                setElementTempDisabled(false);
+              }, 25000); // 25 seconds
             }else{
-               answerSpan.innerText = "You played your pass"             
+               answerSpan.innerText = "You played your pass";             
             }
 
           }
@@ -108,20 +116,12 @@ function QuizAccordion() {
     isCorrect: string,
     passPlayed: string
   ){
-    /* const result = await client.models.TeamQuestions.list({
-      filter: {
-        and: [
-          { question_id: { eq: questionId }},
-          { team_id: { eq: teamId }}
-        ]
-      }
-    }); */
 
     //const objTeamAnswer = result.data[0];
     //console.log(teamAnswer);
     await client.models.TeamQuestions.update({
       id: teamQuestionId,
-      team_answer: teamAnswer,
+      team_answer: teamAnswer.trim(),
       is_correct: isCorrect,
       pass_played: passPlayed
     })
@@ -130,9 +130,9 @@ function QuizAccordion() {
 
   async function setAssociatedTeamQuestionVisible(quizId: string, teamId: string, linkedQuestionNumber: string){
     const questionNumberToUpdate = linkedQuestionNumber.substring(0, linkedQuestionNumber.length - 1) + "B";
-    //console.log(linkedQuestionNumber);
-    //console.log(questionNumberToUpdate);
-    //console.log(teamQuestionId);
+    console.log(questionNumberToUpdate);
+    console.log(quizId);
+    console.log(teamId);
     const result = await client.models.TeamQuestions.list({
         filter: {
           and: [
@@ -144,6 +144,7 @@ function QuizAccordion() {
     });
 
     const answer = result.data[0];
+    console.log(answer);
 
     if (!answer) return;
 
@@ -155,9 +156,9 @@ function QuizAccordion() {
 
   function headerText(questionNumber: string, location: string){
     if(questionNumber.substring(questionNumber.length -1) == "A"){
-      return("Puzzle Number: " + questionNumber.substring(0, questionNumber.length -1))
+      return("Puzzle Number " + questionNumber.substring(0, questionNumber.length -1))
     }else{
-      return("Location: " + questionNumber.substring(0, questionNumber.length -1) + " " + location)
+      return("Location " + questionNumber.substring(0, questionNumber.length -1) + ": " + location)
     }
   }
 
@@ -178,7 +179,7 @@ function QuizAccordion() {
     }
   }
 
-    function buttonEnabled(isCorrect: string, passPlayed: string){
+/*     function buttonEnabled(isCorrect: string, passPlayed: string){
       if(isCorrect == "Y" || passPlayed == "Y"){
         return {
           disabled: true || true
@@ -186,15 +187,22 @@ function QuizAccordion() {
       }else{
         return "";
       }
-    }
+    } */
+
+     function elementDisabled(isCorrect: string, passPlayed: string){
+      if(isCorrect == "Y" || passPlayed == "Y"){
+        return(true);
+      }else{
+        return(false);
+      }
+    }  
 
 const quizId = String(window.sessionStorage.getItem('quizId'));
 const teamId = String(window.sessionStorage.getItem('teamId'));
 
-
   const [refreshTotals, setRefreshTotals] = useState(0);
 
-   const [teamQuestions, setQuestions] = useState<Array<Schema["TeamQuestions"]["type"]>>([]);
+   const [teamQuestions, setTeamQuestions] = useState<Array<Schema["TeamQuestions"]["type"]>>([]);
  
    useEffect(() => {
      client.models.TeamQuestions.observeQuery().subscribe({
@@ -213,7 +221,7 @@ const teamId = String(window.sessionStorage.getItem('teamId'));
       );
 
       // 3. UPDATE STATE
-      setQuestions(sorted);
+      setTeamQuestions(sorted);
       //setQuestions([...data.items]),
          },
     });
@@ -228,34 +236,43 @@ const teamId = String(window.sessionStorage.getItem('teamId'));
   return (
     <div>
       <Accordion>
-      {teamQuestions.map(teamQuestion => 
-        <Accordion.Item eventKey={"item-" + teamQuestion.question_id} key={"item-" + teamQuestion.question_id} >
-          <Accordion.Header>{headerText(String(teamQuestion.question_number), String(teamQuestion.location))}</Accordion.Header>
-          <Accordion.Body>
-            {teamQuestion.question}
-            <br /><br />
-             <S3ObjectHtml quizId={teamQuestion.quiz_id} questionId={teamQuestion.question_id} fileType={teamQuestion.category} />
-                <br />
-                <Form>
-                  <Form.Group className="mb-3" controlId={"txb-" + teamQuestion.question_id}>
-                      <Form.Control type="text" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} defaultValue={displayTeamAnswer(String(teamQuestion.team_answer))} placeholder="your answer" />
-                  </Form.Group>
-                  <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnAnswer-" + teamQuestion.question_id} type="button" onClick={async () => {
-                    await updateAnswer(String(teamQuestion.id), String(teamQuestion.question_id), String(teamQuestion.question_number), "passFalse")
-                    }}>
-                    Submit
-                  </Button>
-                  &nbsp;&nbsp;&nbsp;
-                  <Button variant="primary" {...buttonEnabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played))} id={"btnPass-" + teamQuestion.question_id} type="button" onClick={async () => {
-                    await updateAnswer(String(teamQuestion.id), String(teamQuestion.question_id), String(teamQuestion.question_number), "passTrue")
-                    }}>
-                       Play a pass
-                  </Button>
-                  &nbsp;&nbsp;&nbsp;
-                  <span id={"ans-" + teamQuestion.question_id}>{confirmationText(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}</span>
-                </Form>
-           </Accordion.Body>
-        </Accordion.Item>
+      {teamQuestions.map((teamQuestion) => {
+        const isCompleted = elementDisabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played));
+        console.log(teamQuestion.question);
+        console.log(isCompleted);
+        console.log(elementTempDisabled);
+        return(
+          <Accordion.Item eventKey={"item-" + teamQuestion.question_id} key={"item-" + teamQuestion.question_id} >
+            <Accordion.Header>{headerText(String(teamQuestion.question_number), String(teamQuestion.location))}</Accordion.Header>
+            <Accordion.Body>
+              {teamQuestion.question}
+              <br /><br />
+              <S3ObjectHtml quizId={teamQuestion.quiz_id} questionId={teamQuestion.question_id} fileType={teamQuestion.category} />
+                  <br />
+                  <Form>
+                    <Form.Group className="mb-3" controlId={"txb-" + teamQuestion.question_id}>
+                        <Form.Control type="text"  defaultValue={displayTeamAnswer(String(teamQuestion.team_answer))} 
+                        placeholder="your answer" disabled={isCompleted || elementTempDisabled} />
+                    </Form.Group>
+                    <Button variant="primary" id={"btnAnswer-" + teamQuestion.question_id} type="button" onClick={async () => {
+                      await updateAnswer(String(teamQuestion.id), String(teamQuestion.question_id), String(teamQuestion.question_number), "passFalse")
+                      }} disabled={isCompleted || elementTempDisabled}>
+                        Submit
+                    </Button>
+                    &nbsp;&nbsp;&nbsp;
+                    <Button variant="primary" id={"btnPass-" + teamQuestion.question_id} type="button" onClick={async () => {
+                      await updateAnswer(String(teamQuestion.id), String(teamQuestion.question_id), String(teamQuestion.question_number), "passTrue")
+                      }} disabled={isCompleted || elementTempDisabled}>
+                        Play a pass
+                    </Button>
+                    &nbsp;&nbsp;&nbsp;
+                    <span id={"ans-" + teamQuestion.question_id}>{confirmationText(String(teamQuestion.is_correct), String(teamQuestion.pass_played))}</span>
+                    &nbsp;&nbsp;&nbsp;
+
+                  </Form>
+            </Accordion.Body>
+          </Accordion.Item>
+        )}
       )}
     </Accordion>
     <TeamTotals refreshKey={refreshTotals} quizId={String(window.sessionStorage.getItem('quizId'))} teamId={String(window.sessionStorage.getItem('teamId'))} />

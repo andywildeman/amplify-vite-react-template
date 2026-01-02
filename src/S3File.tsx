@@ -31,7 +31,8 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
     }, []);
 
     switch(fileType) { 
-      case "URL:wav": { 
+      case "URL:wav":
+      case "URL:mp3": { 
         return(
           <div>
             {fileUrl ? (
@@ -42,7 +43,8 @@ export default function S3ObjectHtml({ quizId, questionId, fileType }: S3ObjectH
           </div>
         ); 
       } 
-      case "URL:png": { 
+      case "URL:png":
+      case "URL:mpg": { 
         return(
           <div>
             {fileUrl ? (

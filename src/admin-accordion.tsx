@@ -8,6 +8,7 @@
  import Form from 'react-bootstrap/Form';
  import { generateClient } from "aws-amplify/api";
  //import { update } from "@aws-amplify/data";
+ import S3FileUpload from "./admin-uploadS3File.tsx";
 
  Amplify.configure(outputs);
 
@@ -19,132 +20,24 @@
 
 export default function AdminAccordion({quizId}: accordionProps) {
 
- function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
-  let isCorrect = false;
-  if(submittedAnswer.toLowerCase() == theAnswer.toLowerCase()){isCorrect = true;}
-  if(theAnswer.startsWith("(AND):")){
-    //console.log(theAnswer.substring(6));
-    isCorrect = true;
-    theAnswer.substring(6).split("|").forEach(function (value) {
-       if(!submittedAnswer.toLowerCase().includes(value.toLowerCase())){isCorrect = false;}
-    });
-  }
-  if(theAnswer.startsWith("(OR):")){
-    //console.log(theAnswer.substring(5));
-    theAnswer.substring(5).split("|").forEach(function (value) {
-      if(submittedAnswer.toLowerCase() == value.toLowerCase()){isCorrect = true;}
-    }); 
-  }
-  return isCorrect;
- }
-
- async function updateAnswer(questionId: string, questionNumber: string, passPlayed: string){
-     const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;
-     if(questionId != null){
-      if(passPlayed == "passTrue"){
-        if(confirm("Are you sure you want to play a pass? You cannot play this question once you have played your pass")){
-          console.log("You pressed OK!");
-            const answerSpan = document.getElementById("ans-"+ questionId) as HTMLSpanElement;           answerSpan.innerText = "Well done, that's the right answer";
-            await updateTeamAnswer(
-              String(window.sessionStorage.getItem('teamId')),
-              questionId,
-              "",
-              "",
-              "Y"
-            );
-            answerSpan.innerText = "You played your pass";
-            await setAssociatedTeamQuestionVisible(
-              quizId,
-              questionNumber
-            )
-        } else {
-          console.log("You pressed Cancel!")
-          return;
-        }
-      }
-      try {
-        const answer = await client.models.Questions.get({id: questionId});
-        //console.log(answer.data[0].answer);
-
-        if(answer != null){
-          const submittedAnswer = document.getElementById("txb-"+ questionId) as HTMLInputElement;
-          if(isAnswerCorrect(submittedAnswer.value, String(answer.data?.answer))){
-
-            //console.log("correct");
-            answerSpan.innerText = "Well done, that's the right answer";
-            await updateTeamAnswer(
-              String(window.sessionStorage.getItem('teamId')),
-              questionId,
-              submittedAnswer.value,
-              "Y",
-              ""
-            );
-
-          }else {
-            //console.log("wrong");
-            if(passPlayed != "passTrue"){
-              answerSpan.innerText = "Hard luck, that's the wrong answer"
-            }else{
-               answerSpan.innerText = "You played your pass"             
-            }
-
-          }
-        }
-      } catch (err) {
-
-        console.error("Error:", err);
-      }  
-    }
-  }
-
-  async function updateTeamAnswer(
-    teamId: string,
-    questionId: string,
-    teamAnswer: string,
-    isCorrect: string,
-    passPlayed: string
+  async function updateQuestion(
+    questionId: string
   ){
-    const result = await client.models.TeamQuestions.list({
-      filter: {
-        and: [
-          { question_id: { eq: questionId }},
-          { team_id: { eq: teamId }}
-        ]
-      }
-    });
-    const objTeamAnswer = result.data[0];
-    console.log(teamAnswer);
-    await client.models.TeamQuestions.update({
-      id: objTeamAnswer.id,
-      team_answer: teamAnswer,
-      is_correct: isCorrect,
-      pass_played: passPlayed
+    const question = (document.getElementById("txbQuestion-" + questionId) as HTMLInputElement).value;
+    const answer = (document.getElementById("txbAnswer-" + questionId) as HTMLInputElement).value;
+    const questionType = (document.getElementById("txbQuestionType-" + questionId) as HTMLInputElement).value;
+    const location = (document.getElementById("txbLocation-" + questionId) as HTMLInputElement).value;
+    const category = (document.getElementById("txbCategory-" + questionId) as HTMLInputElement).value;
+
+    await client.models.Questions.update({
+      id: questionId,
+      question: question, 
+      answer: answer, 
+      question_type: questionType, 
+      location: location, 
+      category: category
     })
     //console.log(updatedAnswer);
-  }
-
-  async function setAssociatedTeamQuestionVisible(quizId: string, linkedQuestionNumber: string){
-    const questionNumberToUpdate = linkedQuestionNumber.substring(0, linkedQuestionNumber.length - 1) + "B";
-    //console.log(linkedQuestionNumber);
-    //console.log(questionNumberToUpdate);
-    //console.log(teamQuestionId);
-    const result = await client.models.TeamQuestions.list({
-        filter: {
-          and: [
-            { quiz_id: { eq: quizId }},
-            { question_number: { eq: questionNumberToUpdate }}
-          ]
-        }
-    });
-
-    const answer = result.data[0];
-
-    if (!answer) return;
-
-    await client.models.TeamQuestions.update({
-      id: answer.id,
-      show: "Y"   
-    });
   }
 
   function headerText(questionNumber: string, location: string){
@@ -155,13 +48,13 @@ export default function AdminAccordion({quizId}: accordionProps) {
     }
   }
 
-  function displayTeamAnswer(teamAnswer: string){
-    if(teamAnswer == "null"){
+/*   function displayAnswer(answer: string){
+    if(answer == "null"){
       return("");
     }else{
-      return(teamAnswer);
+      return(answer);
     }
-  }
+  } */
 
 
 //const quizId = String(window.sessionStorage.getItem('quizId'));
@@ -202,22 +95,40 @@ export default function AdminAccordion({quizId}: accordionProps) {
         <Accordion.Item eventKey={"item-" + question.id} key={"item-" + question.id} >
           <Accordion.Header>{headerText(String(question.question_number), String(question.location))}</Accordion.Header>
           <Accordion.Body>
-            {question.id}
+            quizId: {question.quiz_id}
+            <br />
+            questionId: {question.id}
             <br />
             {question.question}
             <br /><br />
              <S3ObjectHtml quizId={question.quiz_id} questionId={question.id} fileType={question.category} />
                 <br />
                 <Form>
-                  <Form.Group className="mb-3" controlId={"txb-" + question.id}>
-                      <Form.Control type="text" defaultValue={displayTeamAnswer(String(question.answer))} placeholder="your answer" />
+                  <Form.Group className="mb-3" controlId={"txbQuestion-" + question.id}>
+                      <Form.Control type="text" defaultValue={String(question.question)} placeholder="the question" />
                   </Form.Group>
-                  <Button variant="primary" onClick={async () => {
-                    await updateAnswer(String(question.id), String(question.question_number), "passFalse")
+                  <Form.Group className="mb-3" controlId={"txbAnswer-" + question.id}>
+                      <Form.Control type="text" defaultValue={String(question.answer)} placeholder="the answer" />
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId={"txbQuestionType-" + question.id}>
+                      <Form.Control type="text" defaultValue={String(question.question_type)} placeholder="question type" />
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId={"txbLocation-" + question.id}>
+                      <Form.Control type="text" defaultValue={String(question.location)} placeholder="location" />
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId={"txbCategory-" + question.id}>
+                      <Form.Control type="text" defaultValue={String(question.category)} placeholder="category" />
+                  </Form.Group>
+                  <S3FileUpload quizId={question.quiz_id} questionId={question.id} />
+                  <br />                  
+                  <Button variant="primary" type="button" onClick={async () => {
+                    await updateQuestion(
+                      String(question.id)
+                    )
                     }}>
-                    Submit
+                    Update
                   </Button>
-                  &nbsp;&nbsp;&nbsp;
+                  <br />
                  </Form>
            </Accordion.Body>
         </Accordion.Item>
