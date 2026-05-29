@@ -9,26 +9,63 @@
 import { SelectField } from '@aws-amplify/ui-react';
 import { useEffect, useState } from 'react';
 import AdminAccordion from "./admin-accordion";
+import QuizResults from "./admin-resultsTable.tsx";
 
+Amplify.configure(outputs);
 
-  Amplify.configure(outputs);
-
- const client = generateClient<Schema>();
+const client = generateClient<Schema>();
 
 export default function Utilities(){
 
-  const [quizzes, setQuizzes] = useState<Array<Schema["Quiz"]["type"]>>([]);
-  const [selectedQuiz, setSelectedQuiz] = useState('');
-
-  async function getQuizzes() {
-    const result = await client.models.Quiz.list({});
-    setQuizzes(result.data);
+  let defaultQuizId = '';
+  if(window.sessionStorage.getItem('quizId') != null){
+    defaultQuizId = String(window.sessionStorage.getItem('quizId'));
   }
 
+  const [quizzes, setQuizzes] = useState<Array<Schema["Quiz"]["type"]>>([]);
+  const [selectedQuiz, setSelectedQuiz] = useState(defaultQuizId);
+
+  const [teams, setTeams] = useState<Array<Schema["Teams"]["type"]>>([]);
+  const [selectedTeam, setSelectedTeam] = useState(defaultQuizId);
+
+  // 🔹 Load quizzes ONCE
   useEffect(() => {
-    getQuizzes();
+    const loadQuizzes = async () => {
+      const result = await client.models.Quiz.list({});
+      setQuizzes(result.data);
+    };
+    loadQuizzes();
   }, []);
-    
+
+  // 🔹 Load teams WHEN quiz changes
+  useEffect(() => {
+    if (!selectedQuiz) {
+      setTeams([]);
+      setSelectedTeam("");
+      return;
+    }
+ 
+    const loadTeams = async () => {
+      const result = await client.models.Teams.list({
+        filter: { quiz_id: { eq: selectedQuiz } },
+      });
+      setTeams(result.data);
+    };
+
+    loadTeams();
+  }, [selectedQuiz]);
+
+  const updateSelectedQuiz = (quizId: string) => {
+    setSelectedQuiz(quizId);
+    setSelectedTeam(""); // reset team
+    sessionStorage.setItem("quizId", quizId);
+  };
+
+  const updateSelectedTeam = (teamId: string) => {
+    setSelectedTeam(teamId);
+    sessionStorage.setItem("teamId", teamId);
+  };
+
     async function resetTeamQuestions(){
         try {
             const teamQuestions = await client.models.TeamQuestions.list({    });
@@ -114,9 +151,12 @@ export default function Utilities(){
         }
     }
 
-    function updateSelectedQuiz(quizId: string){
-        setSelectedQuiz(quizId);
-        window.sessionStorage.setItem("quizId", String(quizId));
+    async function deleteTeamAndQuestions(teamId: string){
+        console.log(teamId);
+      //await client.models.Teams.delete
+      //({
+        //filter: { quiz_id: { eq: selectedQuiz } },
+      //});
     }
 
     return(
@@ -136,7 +176,25 @@ export default function Utilities(){
             </div>
             <p>{selectedQuiz}</p>
 
+            <div>
+                <SelectField label="Teams" 
+                    value={selectedTeam}
+                     onChange={(e) => updateSelectedTeam(e.target.value)}
+                >
+                    <option value="">Select a team</option>
+                    {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                        {team.name}
+                    </option>
+                    ))}
+                </SelectField>
+            </div>
+            <p>{selectedTeam}</p>
+
+            <QuizResults quizId={selectedQuiz}></QuizResults>
+
             <AdminAccordion quizId={selectedQuiz}></AdminAccordion>
+
             <Button variant="primary" type="button" onClick={async () => {
             await resetTeamQuestions()
             }}>
@@ -145,6 +203,12 @@ export default function Utilities(){
 
             <Button variant="primary" type="button" onClick={async () => {
             await createNewQUiz("Test Quiz", "2025-11-30T10:40:38Z")
+            }}>
+            Create New Quiz Tables
+            </Button>
+
+            <Button variant="primary" type="button" onClick={async () => {
+            await deleteTeamAndQuestions("1234")
             }}>
             Create New Quiz Tables
             </Button>

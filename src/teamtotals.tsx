@@ -55,9 +55,9 @@ export default function TeamTotals({refreshKey, quizId, teamId}: TeamTotalsProps
   return (
     <Container>
       <Row>
-        <Col>Puzzles Solved: {puzzleCount}</Col>
-        <Col>Location Challenges Solved: {locationCount}</Col>
-        <Col>Total Score: {Number(puzzleCount) + Number(locationCount)}</Col>
+        <Col style={{textAlign:'center'}}>{puzzleCount}</Col>
+        <Col style={{textAlign:'center'}}>{locationCount}</Col>
+        <Col style={{textAlign:'center'}}>{Number(puzzleCount) + Number(locationCount)}</Col>
       </Row>
     </Container>
   );

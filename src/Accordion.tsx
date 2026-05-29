@@ -8,8 +8,9 @@
  import Form from 'react-bootstrap/Form';
  import { generateClient } from "aws-amplify/api";
  import TeamTotals from "./teamtotals.tsx";
- //import { update } from "@aws-amplify/data";
-
+ import Row from 'react-bootstrap/Row';
+ import Col from 'react-bootstrap/Col';
+  
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
@@ -21,11 +22,14 @@ function QuizAccordion() {
 
  function isAnswerCorrect(submittedAnswer: string, theAnswer: string){
   let isCorrect = false;
+  console.log(theAnswer);
   if(submittedAnswer.toLowerCase().trim() == theAnswer.toLowerCase().trim()){isCorrect = true;}
   if(theAnswer.startsWith("(AND):")){
-    //console.log(theAnswer.substring(6));
+    console.log(theAnswer.substring(6));
     isCorrect = true;
     theAnswer.substring(6).split("|").forEach(function (value) {
+      console.log(value.toLowerCase().trim());
+      console.log(submittedAnswer.toLowerCase().trim());
        if(!submittedAnswer.toLowerCase().trim().includes(value.toLowerCase().trim())){isCorrect = false;}
     });
   }
@@ -238,9 +242,9 @@ const teamId = String(window.sessionStorage.getItem('teamId'));
       <Accordion>
       {teamQuestions.map((teamQuestion) => {
         const isCompleted = elementDisabled(String(teamQuestion.is_correct), String(teamQuestion.pass_played));
-        console.log(teamQuestion.question);
-        console.log(isCompleted);
-        console.log(elementTempDisabled);
+        //console.log(teamQuestion.question);
+        //console.log(isCompleted);
+        //console.log(elementTempDisabled);
         return(
           <Accordion.Item eventKey={"item-" + teamQuestion.question_id} key={"item-" + teamQuestion.question_id} >
             <Accordion.Header>{headerText(String(teamQuestion.question_number), String(teamQuestion.location))}</Accordion.Header>
@@ -275,6 +279,11 @@ const teamId = String(window.sessionStorage.getItem('teamId'));
         )}
       )}
     </Accordion>
+    <Row>
+        <Col style={{textAlign:'center'}}>Puzzles</Col>
+        <Col style={{textAlign:'center'}}>Locations</Col>
+        <Col style={{textAlign:'center'}}>Total</Col>
+    </Row>
     <TeamTotals refreshKey={refreshTotals} quizId={String(window.sessionStorage.getItem('quizId'))} teamId={String(window.sessionStorage.getItem('teamId'))} />
     </div>
   );

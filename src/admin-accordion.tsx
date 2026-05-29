@@ -10,6 +10,7 @@
  //import { update } from "@aws-amplify/data";
  import S3FileUpload from "./admin-uploadS3File.tsx";
 
+
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
@@ -135,6 +136,7 @@ export default function AdminAccordion({quizId}: accordionProps) {
       )}
     </Accordion>
      </div>
+      
   );
 
  }

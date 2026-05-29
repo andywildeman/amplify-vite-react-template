@@ -10,11 +10,9 @@ import { generateClient } from "aws-amplify/api";
 //import { Color } from 'aws-cdk-lib/aws-cloudwatch';
 //import { Container } from 'react-bootstrap';
 
-
  Amplify.configure(outputs);
 
  const client = generateClient<Schema>();
-
 
 function Team() {
   const [isUpdating, setIsUpdating] = useState(false); 
@@ -26,35 +24,36 @@ function Team() {
   );
 
  async function createTeam() {
+    setIsUpdating(true);
     const quizId = String(window.sessionStorage.getItem('quizId'));
-    const teamName = (document.getElementById("txb-team-name") as HTMLInputElement).value;
-    const teamLeader = (document.getElementById("txb-team-leader") as HTMLInputElement).value;
+    const teamName = (document.getElementById("txb-team-name") as HTMLInputElement).value.trim();
+    const teamLeader = (document.getElementById("txb-team-leader") as HTMLInputElement).value.trim();
     const teamLeaderEmail = window.sessionStorage.getItem('userEmail');
     let teamMembers = "";
     if((document.getElementById("txb-team-member1") as HTMLInputElement).value != ""){
-      teamMembers += (document.getElementById("txb-team-member1") as HTMLInputElement).value + "|";
+      teamMembers += (document.getElementById("txb-team-member1") as HTMLInputElement).value.trim() + "|";
     }
     if((document.getElementById("txb-team-member2") as HTMLInputElement).value != ""){
-      teamMembers += (document.getElementById("txb-team-member2") as HTMLInputElement).value + "|" ;
+      teamMembers += (document.getElementById("txb-team-member2") as HTMLInputElement).value.trim() + "|" ;
     }
     if((document.getElementById("txb-team-member3") as HTMLInputElement).value != ""){
-      teamMembers += (document.getElementById("txb-team-member3") as HTMLInputElement).value + "|";
+      teamMembers += (document.getElementById("txb-team-member3") as HTMLInputElement).value.trim() + "|";
     }
     if((document.getElementById("txb-team-member4") as HTMLInputElement).value != ""){
-      teamMembers += (document.getElementById("txb-team-member4") as HTMLInputElement).value  + "|";
+      teamMembers += (document.getElementById("txb-team-member4") as HTMLInputElement).value.trim()  + "|";
     }
     if((document.getElementById("txb-team-member5") as HTMLInputElement).value != ""){
-      teamMembers += (document.getElementById("txb-team-member5") as HTMLInputElement).value  + "|";
+      teamMembers += (document.getElementById("txb-team-member5") as HTMLInputElement).value.trim()  + "|";
     }
     if((document.getElementById("txb-team-member6") as HTMLInputElement).value != ""){
-      teamMembers += (document.getElementById("txb-team-member6") as HTMLInputElement).value  + "|";
+      teamMembers += (document.getElementById("txb-team-member6") as HTMLInputElement).value.trim()  + "|";
     }
     if(teamMembers.substring(teamMembers.length - 1) == "|"){
       teamMembers = teamMembers.substring(0, teamMembers.length -1);
     }
 
   try {
-    const newTeam = await client.models.Teams.create({
+      const newTeam = await client.models.Teams.create({
       quiz_id: quizId,
       name: teamName,
       team_leader: teamLeader,
@@ -63,26 +62,29 @@ function Team() {
     });
 
     console.log("Team created:", newTeam);
-    const teamQuestions = await getAllQuestions(String(quizId), String(newTeam.data!.id))
-    console.log(teamQuestions);
+    await getAllQuestions(String(quizId), String(newTeam.data!.id))
+    //console.log(teamQuestions);
 
-    return newTeam;
+    //return newTeam;
   } catch (error) {
     console.error("Error creating team:", error);
+  } finally {
+    setIsUpdating(false);
   }
 }
 
 async function getAllQuestions(quizId: string, teamId: string){
+  setIsUpdating(true);
   try {
     const questions = await client.models.Questions.list({
       filter: {
         quiz_id: { eq: quizId }
       }
     });
-    console.log(questions);
+    //console.log(questions);
     for (const question of questions.data) {
-      console.log(question);
-      const newTeamQuestion = await createTeamQuestion(
+      //console.log(question);
+      await createTeamQuestion(
         teamId,
         String(quizId),
         question.id,
@@ -93,14 +95,16 @@ async function getAllQuestions(quizId: string, teamId: string){
         String(question.location),
         String(question.show)
     );
-    console.log(newTeamQuestion);
+    //console.log(newTeamQuestion);
   }
   window.location.reload();
- return (questions);   
+ //return (questions);   
 
   } catch (error) {
     console.log("Error listing questions:", error);
-  }
+  } finally{
+    setIsUpdating(false);
+  }      
 }
 
 async function createTeamQuestion(
@@ -132,7 +136,7 @@ async function createTeamQuestion(
 
     console.log("Team created:", newTeam);
     
-    return newTeam;
+    //return newTeam;
   } catch (error) {
     console.error("Update failed", error);
   } finally {
@@ -182,8 +186,7 @@ async function createTeamQuestion(
             </Form>
 
           <Button variant="primary" disabled={isUpdating} style={btnStyle} onClick={async () => {
-                //e.preventDefault(); 
-                
+                //e.preventDefault();                 
                 await createTeam();
               }}>
             Create Team
